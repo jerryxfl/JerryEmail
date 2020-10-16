@@ -1,5 +1,6 @@
 package com.edu.cdp.custom;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
@@ -17,11 +18,13 @@ import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.BounceInterpolator;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.edu.cdp.R;
+import com.edu.cdp.base.BaseActivity;
 import com.edu.cdp.net.okhttp.OkHttpUtils;
 
 import java.io.File;
@@ -29,12 +32,13 @@ import java.io.IOException;
 import java.util.Random;
 
 public class VoiceView extends View implements View.OnTouchListener {
+    private BaseActivity baseActivity;
     private Paint mPathPaint, mDownloadPaint;
     private Path path;
     private int width, height;
 
 
-    private String url = "http://47.98.223.82:8080/JerryEmail/resources/voice/undernoflag.wav";
+    private String url;
     private final boolean mPlayStatus = false;
     private byte[] mFft;
     private MediaPlayer mMediaPlayer;
@@ -44,15 +48,18 @@ public class VoiceView extends View implements View.OnTouchListener {
     private RectF downloadRectF;//后面园的坐标
     private RectF downloadRectF2;//后面园的坐标
     private boolean mFileIsDownload = false;//是否已经下载
+    private boolean mIsError = false;//是否已经下载
+    private boolean mIsSuccess = false;//是否已经下载
     private int mDownloadStatus = 1;//1：未开始下载  2：正在下载
 
     private float max = 100;
     private float progress = 0;
     private int prepareProgress = 1;
-
+    private float errorProgress = 1;
+    private int successProgress = 1;
 
     public VoiceView(Context context) {
-        this(context, null);
+        this(context, (AttributeSet) null);
     }
 
     public VoiceView(Context context, @Nullable AttributeSet attrs) {
@@ -77,7 +84,7 @@ public class VoiceView extends View implements View.OnTouchListener {
         random = new Random();
 
         //判断文件是否已经下载
-//        mFileIsDownload = fileIsExists(url);
+        mFileIsDownload = fileIsExists(url);
 
         setOnTouchListener(this);
     }
@@ -89,9 +96,17 @@ public class VoiceView extends View implements View.OnTouchListener {
 
             if (x > (width - height)) {
                 Toast.makeText(getContext(), "下载", Toast.LENGTH_SHORT).show();
-                downloadFile(url);
+                if(baseActivity!=null){
+                    baseActivity.RequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    baseActivity.RequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
+                    if(!mFileIsDownload)downloadFile(url);
+                }
             } else if (x < (width - (height + dip2px(5)))) {
                 Toast.makeText(getContext(), "播放", Toast.LENGTH_SHORT).show();
+                if(baseActivity!=null){
+                    baseActivity.RequestPermission(Manifest.permission.RECORD_AUDIO);
+                    if(mFileIsDownload)playAudio("");
+                }
             }
 
             return false;
@@ -110,18 +125,60 @@ public class VoiceView extends View implements View.OnTouchListener {
                 public void onFailure(String msg) {
                     System.out.println(msg);
                     mDownloadStatus = 1;
+                    mIsError = true;
+                    mIsSuccess =false;
+
+                    float sweepAngle = ((360 / max) * progress);
+                    ValueAnimator valueAnimator = ValueAnimator.ofFloat(sweepAngle, 0);
+                    valueAnimator.setDuration(500);
+                    valueAnimator.setRepeatCount(0);
+                    valueAnimator.addUpdateListener(animation -> {
+                        errorProgress = (float) animation.getAnimatedValue();
+                        invalidate();
+                    });
+                    valueAnimator.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            prepareProgress = 1;
+                            mIsError = false;
+                            invalidate();
+                        }
+                    });
+                    valueAnimator.start();
+
                 }
 
                 @Override
                 public void onSuccess() {
                     mDownloadStatus = 1;
-                    mFileIsDownload = true;
+                    mIsError = false;
+                    mIsSuccess = true;
+                    ValueAnimator valueAnimator = ValueAnimator.ofInt(10, 1);
+                    valueAnimator.setDuration(500);
+                    valueAnimator.setRepeatCount(0);
+                    valueAnimator.setInterpolator(new BounceInterpolator());
+                    valueAnimator.addUpdateListener(animation -> {
+                        successProgress = (int) animation.getAnimatedValue();
+                        invalidate();
+                    });
+
+                    valueAnimator.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            mFileIsDownload = true;
+                            mIsSuccess = false;
+                            invalidate();
+                        }
+                    });
+                    valueAnimator.start();
                 }
 
                 @Override
                 public void onPrepare() {
                     mDownloadStatus = 2;
-                    ValueAnimator valueAnimator = ValueAnimator.ofInt(1, 5);
+                    ValueAnimator valueAnimator = ValueAnimator.ofInt(1, 6);
                     valueAnimator.setDuration(200);
                     valueAnimator.setRepeatCount(0);
                     valueAnimator.addUpdateListener(animation -> {
@@ -134,7 +191,7 @@ public class VoiceView extends View implements View.OnTouchListener {
                 @Override
                 public void onDownloadStart(long max, long progress, String fileName, String realPath) {
                     VoiceView.this.max = max;
-                    System.out.println("开始下载了 max:" +  VoiceView.this.max);
+                    System.out.println("开始下载了 max:" + VoiceView.this.max);
 
                 }
 
@@ -170,42 +227,77 @@ public class VoiceView extends View implements View.OnTouchListener {
     }
 
 
-    private void playAudio() {
-        mMediaPlayer = MediaPlayer.create(getContext(), R.raw.undernoflag);
-        mMediaPlayer.start();
-        visualizer = new Visualizer(mMediaPlayer.getAudioSessionId());
-        visualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
-        visualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
-            @Override
-            public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
-            }
-
-            @Override
-            public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
-                //length  =  1024 个数据;
-                mFft = new byte[fft.length / 2 + 1];
-                mFft[0] = (byte) Math.abs(fft[1]);
-                int j = 1;
-                for (int i = 2; i < 18; i++) {
-                    mFft[j] = (byte) Math.hypot(fft[i], fft[i + 1]);
-                    i += 2;
-                    j++;
+    private void playAudio(String file) {
+        if(mMediaPlayer!=null){
+            if(mMediaPlayer.isPlaying())mMediaPlayer.pause();
+            else {
+                mMediaPlayer.start();
+                if(visualizer!=null){
+                    visualizer.setEnabled(false);
+                    if (visualizer != null) {
+                        visualizer.release();
+                    }
                 }
+                visualizer = new Visualizer(mMediaPlayer.getAudioSessionId());
+                visualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+                visualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+                    @Override
+                    public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+                    }
+
+                    @Override
+                    public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
+                        //length  =  1024 个数据;
+                        mFft = new byte[fft.length / 2 + 1];
+                        mFft[0] = (byte) Math.abs(fft[1]);
+                        int j = 1;
+                        for (int i = 2; i < 18; i++) {
+                            mFft[j] = (byte) Math.hypot(fft[i], fft[i + 1]);
+                            i += 2;
+                            j++;
+                        }
+                        invalidate();
+                    }
+                }, Visualizer.getMaxCaptureRate() / 2, true, true);
+                //开启采样
+                visualizer.setEnabled(true);
+            }
+        }else{
+            mMediaPlayer = MediaPlayer.create(getContext(), R.raw.undernoflag);
+            mMediaPlayer.start();
+            visualizer = new Visualizer(mMediaPlayer.getAudioSessionId());
+            visualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+            visualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+                @Override
+                public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+                }
+
+                @Override
+                public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
+                    //length  =  1024 个数据;
+                    mFft = new byte[fft.length / 2 + 1];
+                    mFft[0] = (byte) Math.abs(fft[1]);
+                    int j = 1;
+                    for (int i = 2; i < 18; i++) {
+                        mFft[j] = (byte) Math.hypot(fft[i], fft[i + 1]);
+                        i += 2;
+                        j++;
+                    }
+                    invalidate();
+                }
+            }, Visualizer.getMaxCaptureRate() / 2, true, true);
+            //开启采样
+            visualizer.setEnabled(true);
+
+            mMediaPlayer.setOnCompletionListener(mp -> {
+                visualizer.setEnabled(false);
+                if (visualizer != null) {
+                    visualizer.release();
+                }
+                mFft = null;
                 invalidate();
-            }
-        }, Visualizer.getMaxCaptureRate() / 2, true, true);
-        //开启采样
-        visualizer.setEnabled(true);
-
-        mMediaPlayer.setOnCompletionListener(mp -> {
-            visualizer.setEnabled(false);
-            if (visualizer != null) {
-                visualizer.release();
-            }
-            mFft = null;
-            invalidate();
-        });
-
+            });
+        }
     }
 
     public void stopPlay() {
@@ -250,7 +342,6 @@ public class VoiceView extends View implements View.OnTouchListener {
         );
 
 
-
         downloadRectF2 = new RectF(
                 w - h + h / 5,
                 h / 5,
@@ -291,63 +382,86 @@ public class VoiceView extends View implements View.OnTouchListener {
             //文件未下载
             mDownloadPaint.setStyle(Paint.Style.STROKE);
             mDownloadPaint.setStrokeWidth(h / 10);
-            mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
-            canvas.drawArc(downloadRectF, 0, 360, false, mDownloadPaint);
-
             mDownloadPaint.setStrokeCap(Paint.Cap.ROUND);
-            mDownloadPaint.setStyle(Paint.Style.STROKE);
-            mDownloadPaint.setStrokeWidth(h/18);
-            mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
-            @SuppressLint("DrawAllocation") Path arrowPath = new Path();
-            if(prepareProgress==1){
-                arrowPath.moveTo(w - h / 2, h * 2 / 5);
-                arrowPath.rLineTo(0, h / 5);
-                arrowPath.rQuadTo(-(h / 5 / 2), 0, -(h / 5 / 2), -(h / 5 / 2));
-                arrowPath.moveTo(w - h / 2, h * 3 / 5);
-                arrowPath.rQuadTo(h / 5 / 2, 0, h / 5 / 2, -(h / 5 / 2));
-                canvas.drawPath(arrowPath, mDownloadPaint);
 
-            }else if(prepareProgress == 2){
-                arrowPath.moveTo(w - h / 2, h / 5);
-                arrowPath.rLineTo(0, h *2/ 5);
-                arrowPath.rQuadTo(-(h / 5 / 4), 0, -(h / 5 / 4), -(h / 5 / 4));
-                arrowPath.moveTo(w - h / 2, h * 3 / 5);
-                arrowPath.rQuadTo(h / 5 / 4, 0, h / 5 / 4, -(h / 5 / 4));
-                canvas.drawPath(arrowPath, mDownloadPaint);
+            if(mIsError || mIsSuccess){
+                //下载出错或成功
+                if(mIsError){
+                    mDownloadPaint.setStrokeWidth(h / 10);
+                    mDownloadPaint.setStyle(Paint.Style.STROKE);
+                    if(errorProgress<=10) mDownloadPaint.setColor(Color.RED);
+                    else mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
+                    canvas.drawArc(downloadRectF, 0, 360, false, mDownloadPaint);
 
-            }else if(prepareProgress==3){
-                arrowPath.moveTo(w - h / 2, h / 5);
-                arrowPath.rLineTo(0, h *2/ 5);
-                canvas.drawPath(arrowPath, mDownloadPaint);
-
-            }else if(prepareProgress==4){
-                arrowPath.moveTo(w - h / 2, h / 5);
-                arrowPath.lineTo(w - h / 2, h / 2);
-                canvas.drawPath(arrowPath, mDownloadPaint);
-
-            }else if(prepareProgress==5){
-                //开始下载动画
-                if(progress!=max){
-                    mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
                     mDownloadPaint.setStyle(Paint.Style.FILL);
-                    float sweepAngle =  ((360/max)*progress);
-                    System.out.println("(360/"+max+") X " + progress +" = "+sweepAngle);
-
-                    canvas.drawArc(downloadRectF2,-90,sweepAngle,true,mDownloadPaint);
-                }else{
-                    mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
+                    canvas.drawArc(downloadRectF2, -90, errorProgress, true, mDownloadPaint);
+                }else if(mIsSuccess){
+                    int stockWidth = (h/2) /successProgress;
                     mDownloadPaint.setStyle(Paint.Style.FILL);
-                    canvas.drawCircle(w - h / 2,h / 2,h/2-h/5,mDownloadPaint);
+                    mDownloadPaint.setColor(Color.parseColor("#56ee9a"));
+                    canvas.drawCircle(w - h / 2, h / 2, h/2-stockWidth, mDownloadPaint);
+                }
+            }else{
+                //下载未出错
+                mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
+                canvas.drawArc(downloadRectF, 0, 360, false, mDownloadPaint);
+
+                @SuppressLint("DrawAllocation") Path arrowPath = new Path();
+                if (prepareProgress == 1) {
+                    arrowPath.moveTo(w - h / 2, h * 2 / 5);
+                    arrowPath.rLineTo(0, h / 5);
+                    arrowPath.rQuadTo(-(h / 5 / 2), 0, -(h / 5 / 2), -(h / 5 / 2));
+                    arrowPath.moveTo(w - h / 2, h * 3 / 5);
+                    arrowPath.rQuadTo(h / 5 / 2, 0, h / 5 / 2, -(h / 5 / 2));
+                    mDownloadPaint.setStrokeWidth(h / 15);
+                    canvas.drawPath(arrowPath, mDownloadPaint);
+                } else if (prepareProgress == 2) {
+                    arrowPath.moveTo(w - h / 2, h / 5);
+                    arrowPath.rLineTo(0, h * 2 / 5);
+                    arrowPath.rQuadTo(-(h / 5 / 4), 0, -(h / 5 / 4), -(h / 5 / 4));
+                    arrowPath.moveTo(w - h / 2, h * 3 / 5);
+                    arrowPath.rQuadTo(h / 5 / 4, 0, h / 5 / 4, -(h / 5 / 4));
+                    mDownloadPaint.setStrokeWidth(h / 16);
+                    canvas.drawPath(arrowPath, mDownloadPaint);
+
+                } else if (prepareProgress == 3) {
+                    arrowPath.moveTo(w - h / 2, h / 5);
+                    arrowPath.rLineTo(0, h * 2 / 5);
+                    arrowPath.rQuadTo(-(h / 5 / 5), 0, -(h / 5 / 5), -(h / 5 / 5));
+                    arrowPath.moveTo(w - h / 2, h * 3 / 5);
+                    arrowPath.rQuadTo(h / 5 / 5, 0, h / 5 / 5, -(h / 5 / 5));
+                    mDownloadPaint.setStrokeWidth(h / 17);
+
+                    canvas.drawPath(arrowPath, mDownloadPaint);
+
+                } else if (prepareProgress == 4) {
+                    arrowPath.moveTo(w - h / 2, h / 5);
+                    arrowPath.lineTo(w - h / 2, h / 2);
+                    mDownloadPaint.setStrokeWidth(h / 18);
+
+                    canvas.drawPath(arrowPath, mDownloadPaint);
+                } else if (prepareProgress == 5) {
+                    arrowPath.moveTo(w - h / 2, h / 5);
+                    arrowPath.lineTo(w - h / 2, h / 2);
+                    mDownloadPaint.setStrokeWidth(h / 20);
+                    canvas.drawPath(arrowPath, mDownloadPaint);
+                } else if (prepareProgress == 6) {
+                    //开始下载动画
+                    if (progress != max) {
+                        mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
+                        mDownloadPaint.setStyle(Paint.Style.FILL);
+                        float sweepAngle = ((360 / max) * progress);
+                        System.out.println("(360/" + max + ") X " + progress + " = " + sweepAngle);
+
+                        canvas.drawArc(downloadRectF2, -90, sweepAngle, true, mDownloadPaint);
+                    } else {
+                        mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
+                        mDownloadPaint.setStyle(Paint.Style.FILL);
+                        canvas.drawCircle(w - h / 2, h / 2, h / 2 - h / 5, mDownloadPaint);
+                    }
                 }
             }
-        } else {
-            //文件已经下载
-            mDownloadPaint.setStyle(Paint.Style.STROKE);
-            mDownloadPaint.setStrokeWidth(h / 8);
-            mDownloadPaint.setColor(Color.parseColor("#2ecc71"));
-            mDownloadPaint.setStrokeCap(Paint.Cap.ROUND);
 
-            canvas.drawPoint(w2 + dip2px(5), h - h / 8, mDownloadPaint);
         }
 
         //画柱状波形图
@@ -391,4 +505,18 @@ public class VoiceView extends View implements View.OnTouchListener {
         final float scale = getContext().getResources().getDisplayMetrics().density;
         return (int) (pxValue / scale + 0.5f);
     }
+
+
+    public void  setUrl(String url){
+        System.out.println("url:"+url);
+        this.url = url;
+        fileIsExists(url);
+        invalidate();
+    }
+
+    public void attach(BaseActivity baseActivity){
+        this.baseActivity = baseActivity;
+    }
+
 }
+

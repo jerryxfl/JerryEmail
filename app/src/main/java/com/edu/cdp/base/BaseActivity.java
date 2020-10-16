@@ -118,7 +118,7 @@ public abstract class BaseActivity<DATABIND extends ViewDataBinding> extends App
     }
 
 
-    protected void RequestPermission(String permission) {
+    public void RequestPermission(String permission) {
         this.permission = permission;
         if (ContextCompat.checkSelfPermission(this, permission) != PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{permission}, 1);

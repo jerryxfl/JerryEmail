@@ -91,10 +91,12 @@ public class EmailActivity extends BaseActivity<ActivityEmailBinding> {
                     binding.other.addView(textView);
                     break;
                 case "link":
-//                    handler.sendEmptyMessageDelayed(0,random.nextInt(2000)+3000);
+                    handler.sendEmptyMessageDelayed(0,random.nextInt(2000)+3000);
                     break;
                 case "voice":
                     VoiceView voiceView = new VoiceView(this);
+                    voiceView.attach(EmailActivity.this);
+                    voiceView.setUrl(jsonObject.getString(key));
                     LinearLayout.LayoutParams  params1 =  new LinearLayout.LayoutParams(100,100);
                     params1.leftMargin = 20;
                     params1.topMargin = 20;
