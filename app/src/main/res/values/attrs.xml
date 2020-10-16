@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="AvatarView">
+        <attr name="minRadius" format="integer"/>
+        <attr name="avatar" format="reference"/>
+    </declare-styleable>
+
+    <declare-styleable name="CircleOnlineAvatar">
+        <attr name="c_avatar" format="reference"/>
+        <attr name="c_minRadius" format="integer"/>
+        <attr name="showOnlineState" format="boolean"/>
+    </declare-styleable>
+
+    <declare-styleable name="FurtherAvatar">
+        <attr name="length" format="integer"/>
+        <attr name="radius" format="dimension"/>
+    </declare-styleable>
+
+    <declare-styleable name="TriangleView">
+        <attr name="color" format="color"/>
+    </declare-styleable>
+
+
+
+    <declare-styleable name="LoadingView">
+        <attr name="indicatorColor" format="color"/>
+        <attr name="indicatorBottomColor" format="color"/>
+        <attr name="indicatorWidth" format="dimension"/>
+        <attr name="loadingStyle" format="integer">
+            <enum name="point" value="1"/>
+            <enum name="circle" value="2"/>
+            <enum name="shutters" value="3"/>
+            <enum name="bubbles" value="4"/>
+        </attr>
+
+    </declare-styleable>
+</resources>

@@ -1,0 +1,182 @@
+package com.edu.cdp.base;
+
+import android.Manifest;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.view.KeyEvent;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.databinding.DataBindingUtil;
+import androidx.databinding.ViewDataBinding;
+
+import com.edu.cdp.ui.dialog.ConfirmDialog;
+import com.edu.cdp.ui.dialog.PermissionDialog;
+import com.edu.cdp.utils.InitApp;
+import com.tencent.mmkv.MMKV;
+
+import org.greenrobot.eventbus.EventBus;
+
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+
+public abstract class BaseActivity<DATABIND extends ViewDataBinding> extends AppCompatActivity {
+    private ConfirmDialog confirmDialog;
+    private String permission;
+    private final int NOT_NOTICE = 2;
+    private PermissionDialog permissionDialog;
+
+    //获得布局id
+    protected abstract int setContentView();
+
+    //设置布局数据
+    protected abstract void setData(DATABIND binding);
+
+    //初始化布局
+    protected abstract void initViews(DATABIND binding);
+
+    //设置监听器
+    protected abstract void setListeners(DATABIND binding);
+
+    protected DATABIND binding;
+
+    protected MMKV mmkv;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        //透明状态栏
+        setWindow();
+        binding = DataBindingUtil.setContentView(this, setContentView());
+        getSupportActionBar().hide();
+
+        InitApp.getInstance().addActivity(this);
+        mmkv = MMKV.defaultMMKV();
+        setData(binding);
+        binding.setLifecycleOwner(this);
+        initViews(binding);
+        setListeners(binding);
+    }
+
+    private void setWindow() {
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+    }
+
+    protected void SignEventBus() {
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
+        InitApp.getInstance().removeActivity(this);
+        if (confirmDialog != null) {
+            confirmDialog.dismissDialog();
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (InitApp.getInstance().isLast() && keyCode == KeyEvent.KEYCODE_BACK) {
+            if (confirmDialog == null) {
+                confirmDialog = new ConfirmDialog.Builder(this)
+                        .setTitle("提示")
+                        .setContent("是否退出APP？")
+                        .setConfirmClickListener(new ConfirmDialog.ConfirmClickListener() {
+                            @Override
+                            public void onConfirmClick(ConfirmDialog confirmDialog) {
+                                finish();
+                            }
+                        })
+                        .setCancelClickListener(new ConfirmDialog.CancelClickListener() {
+                            @Override
+                            public void onCancelClick(ConfirmDialog confirmDialog) {
+                                confirmDialog.dismissDialog();
+                            }
+                        })
+                        .build();
+            }
+            confirmDialog.show();
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+
+    protected void RequestPermission(String permission) {
+        this.permission = permission;
+        if (ContextCompat.checkSelfPermission(this, permission) != PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{permission}, 1);
+        } else {
+//            Toast.makeText(this, "您已经申请了权限!", Toast.LENGTH_SHORT).show();
+            //权限已申请
+
+            if(permissionDialog!=null)permissionDialog.dismissDialog();
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1) {
+            for (int i = 0; i < permissions.length; i++) {
+                if (grantResults[i] == PERMISSION_GRANTED) {//选择了“始终允许”
+                    Toast.makeText(this, "" + "权限" + permissions[i] + "申请成功", Toast.LENGTH_SHORT).show();
+                } else {
+                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[i])) {//用户选择了禁止不再询问
+                        if(permissionDialog==null){
+                            permissionDialog = new PermissionDialog(this);
+                            permissionDialog.setListener(new PermissionDialog.Listener() {
+                                @Override
+                                public void onConfirm() {
+                                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                    Uri uri = Uri.fromParts("package", getPackageName(), null);//注意就是"package",不用改成自己的包名
+                                    intent.setData(uri);
+                                    startActivityForResult(intent, NOT_NOTICE);
+                                }
+                            });
+                        }
+                    } else {//选择禁止
+                        if(permissionDialog==null){
+                            permissionDialog = new PermissionDialog(this);
+                            permissionDialog.setListener(new PermissionDialog.Listener() {
+                                @Override
+                                public void onConfirm() {
+                                    ActivityCompat.requestPermissions(BaseActivity.this,
+                                            new String[]{permission}, 1);
+                                }
+                            });
+                        }
+                    }
+                    permissionDialog.showDialog();
+                }
+            }
+        }
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == NOT_NOTICE) {
+            RequestPermission(permission);//由于不知道是否选择了允许所以需要再次判断
+        }
+    }
+}

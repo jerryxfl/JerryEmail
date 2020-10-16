@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:autoMirrored="true"
+    android:dither="true"
+    android:enterFadeDuration="200"
+    android:exitFadeDuration="200"
+    android:variablePadding="false"
+    android:visible="true"
+    android:constantSize="true">
+    <item android:state_pressed="false">
+        <shape>
+            <corners android:radius="50dp"/>
+            <padding android:left="10dp"
+                android:right="10dp"
+                android:top="1dp"
+                android:bottom="1dp"/>
+            <stroke
+                android:width="2dp"
+                android:color="#ced6e0" />
+            <padding android:left="10dp"
+                android:right="10dp"
+                android:top="1dp"
+                android:bottom="1dp"/>
+            <solid android:color="#dfe4ea"/>
+        </shape>
+    </item>
+
+    <item android:state_pressed="true">
+        <shape>
+            <corners android:radius="50dp"/>
+            <padding android:left="10dp"
+                android:right="10dp"
+                android:top="1dp"
+                android:bottom="1dp"/>
+            <stroke
+                android:width="2dp"
+                android:color="#bdc3c7" />
+            <padding android:left="10dp"
+                android:right="10dp"
+                android:top="1dp"
+                android:bottom="1dp"/>
+            <solid android:color="#dfe4ea"/>
+        </shape>
+    </item>
+</selector>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:padding="10dp"
+    android:background="?android:attr/selectableItemBackground"
+    android:id="@+id/container">
+    <com.edu.cdp.custom.CircleOnlineAvatar
+        android:id="@+id/avatar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:c_minRadius="40"
+        app:showOnlineState="false"/>
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1072059168的收件箱"
+        android:layout_marginStart="60dp"
+        android:layout_centerVertical="true"
+        android:textColor="#222222"
+        android:textStyle="bold"
+        android:textSize="17sp"/>
+    <TextView
+        android:id="@+id/mail_num"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="253"
+        android:paddingTop="1dp"
+        android:paddingBottom="1dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:textColor="#B7B7B7"
+        android:textStyle="bold"
+        android:textSize="15sp"/>
+
+
+</RelativeLayout>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.activity.LoginWayActivity">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1.5">
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/email"
+                android:scaleType="centerCrop"/>
+            <TextView
+                android:id="@+id/appName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:textSize="25sp"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:layout_centerHorizontal="true"
+                android:layout_alignBottom="@+id/logo"
+                android:layout_marginBottom="-100dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bring the desires of your heart to \n God with our powerful prayers"
+                android:textSize="18sp"
+                android:textColor="#222222"
+                android:layout_centerHorizontal="true"
+                android:layout_alignBottom="@+id/appName"
+                android:layout_marginBottom="-50dp"/>
+
+        </RelativeLayout>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            <LinearLayout
+                android:layout_weight="5"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
+                <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:overScrollMode="never"
+                    android:id="@+id/loginwayRecyclerView"/>
+            </LinearLayout>
+            <RelativeLayout
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="0dp">
+               <LinearLayout
+                   android:layout_centerInParent="true"
+                   android:orientation="horizontal"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content">
+                   <TextView
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:text="Don't have an account?"
+                       android:textSize="18sp"
+                       android:textColor="#222222"/>
+                   <TextView
+                       android:id="@+id/sign_up"
+                       android:layout_marginStart="10dp"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:text="Signup"
+                       android:textSize="18sp"
+                       android:textColor="#3498db"/>
+               </LinearLayout>
+            </RelativeLayout>
+        </LinearLayout>
+    </LinearLayout>
+</layout>
