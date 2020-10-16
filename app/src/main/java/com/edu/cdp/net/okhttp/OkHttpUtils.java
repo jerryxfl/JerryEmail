@@ -187,10 +187,10 @@ public class OkHttpUtils {
 
     public static void DOWNLOAD(final String url, final String saveDir, Map<String, String> headers, final JDownloadCallback jdownloadCallback){
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .readTimeout(5 * 1000, TimeUnit.MILLISECONDS)
+                .readTimeout(500  * 1000, TimeUnit.MILLISECONDS)
                 .writeTimeout(5 * 1000, TimeUnit.MILLISECONDS)
-                .connectTimeout(5 * 1000, TimeUnit.MILLISECONDS)
-                .callTimeout(5 * 1000, TimeUnit.MILLISECONDS)
+                .connectTimeout(500 *1000, TimeUnit.MILLISECONDS)
+                .callTimeout(500 * 1000, TimeUnit.MILLISECONDS)
                 .build();
 
         Request.Builder builder = new Request.Builder().url(url);
@@ -270,13 +270,7 @@ public class OkHttpUtils {
                     });
                 }catch (Exception e){
                     e.printStackTrace();
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            jdownloadCallback.onFailure("下载文件出错");
-                        }
-                    });
+                    new Handler(Looper.getMainLooper()).post(() -> jdownloadCallback.onFailure("下载文件出错"));
                 }finally{
                     try{
                         if(is!=null)

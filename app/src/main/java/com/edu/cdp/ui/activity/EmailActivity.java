@@ -8,6 +8,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Html;
@@ -90,7 +91,7 @@ public class EmailActivity extends BaseActivity<ActivityEmailBinding> {
                     binding.other.addView(textView);
                     break;
                 case "link":
-                    handler.sendEmptyMessageDelayed(0,random.nextInt(2000)+3000);
+//                    handler.sendEmptyMessageDelayed(0,random.nextInt(2000)+3000);
                     break;
                 case "voice":
                     VoiceView voiceView = new VoiceView(this);

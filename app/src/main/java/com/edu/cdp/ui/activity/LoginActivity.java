@@ -135,7 +135,6 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
             @Override
             public void onFailure() {
                 loadingDialog.dismissDialog();
-                Toast.makeText(LoginActivity.this,"连接超时",Toast.LENGTH_SHORT).show();
             }
 
 
@@ -158,19 +157,14 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
                                 allLocalUser.isEmpty()
                         );
                         userDao.insertOneUser(localUser);
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Glide.with(LoginActivity.this)
-                                        .load(localUser.getAvatar())
-                                        .into(new SimpleTarget<Drawable>() {
-                                            @Override
-                                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                                binding.avatar.setDrawable(resource);
-                                            }
-                                        });
-                            }
-                        });
+                        new Handler(Looper.getMainLooper()).post(() -> Glide.with(LoginActivity.this)
+                                .load(localUser.getAvatar())
+                                .into(new SimpleTarget<Drawable>() {
+                                    @Override
+                                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                        binding.avatar.setDrawable(resource);
+                                    }
+                                }));
                     }else{
                         login.setUUID(json.getString("uuid"));
                         userDao.updateUsers(login);

@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import com.edu.cdp.R;
 import com.edu.cdp.base.BaseFragment;
 import com.edu.cdp.databinding.FragmentWebViewBinding;
+import com.edu.cdp.databinding.FragmentWebViewBindingImpl;
 import com.just.agentweb.AgentWeb;
 import com.just.agentweb.AgentWebConfig;
 import com.just.agentweb.DefaultWebClient;
@@ -49,6 +50,7 @@ public class WebViewFragment extends BaseFragment<FragmentWebViewBinding> {
     @Override
     protected void initView(FragmentWebViewBinding binding) {
         String url = getArguments().getString(ARG);
+        System.out.println("访问的url:"+url);
         agentWeb = AgentWeb.with(this)
                 .setAgentWebParent(binding.webParent,new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT) )
                 .useDefaultIndicator(-1,3)
