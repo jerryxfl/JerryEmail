@@ -14,6 +14,7 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.ScaleAnimation;
@@ -21,11 +22,11 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-public class SwitchButton extends View implements View.OnClickListener {
+public class SwitchButton extends View implements View.OnTouchListener {
     private Context mContext;
     private int mShadowWidth;
     private int w,h,circleStockWidth;
-    private int mBodyColor = Color.RED;
+    private int mBodyColor = Color.GREEN;
     private int mTouchColor = Color.WHITE;
     private boolean onChange = false;
 
@@ -33,7 +34,7 @@ public class SwitchButton extends View implements View.OnClickListener {
     private Path mBodyPath;
 
 
-    private int progress = 0,progress1 = 0,end=0,changeLength=0,changeLength1=0;
+    private float progress = 0,progress1 = 0,end=0,changeLength=0,changeLength1=0;
 
     public SwitchButton(Context context) {
         this(context,null);
@@ -64,7 +65,7 @@ public class SwitchButton extends View implements View.OnClickListener {
 
         mBodyPath = new Path();
 
-        setOnClickListener(this::onClick);
+        setOnTouchListener(this::onTouch);
     }
 
 
@@ -84,7 +85,7 @@ public class SwitchButton extends View implements View.OnClickListener {
 
         if(widthMode == MeasureSpec.AT_MOST){
             Log.i("MEASURE","AT_MOST");
-            specWidth = Math.min(width,dip2px(50));
+            specWidth = Math.min(width,dip2px(10));
         }else if(widthMode == MeasureSpec.EXACTLY){
             Log.i("MEASURE","EXACTLY");
             specWidth = width;
@@ -102,21 +103,24 @@ public class SwitchButton extends View implements View.OnClickListener {
         super.onSizeChanged(w, h, oldw, oldh);
         this.w = w;
         this.h = h;
-        this.circleStockWidth =h/7;
-        this.changeLength = w*3/4-circleStockWidth*2-circleStockWidth/3;
-        this.changeLength1 = circleStockWidth*2+w/4+circleStockWidth/3;
+        this.circleStockWidth =h/6;
+        this.changeLength = (float) (w*3/4-circleStockWidth*2-circleStockWidth/4);
+        this.changeLength1 = (float) (circleStockWidth*2+w/4+circleStockWidth/4);
         this.end = changeLength;
+        this.mShadowWidth = h / 10;
+
+        int b = (int) (mShadowWidth*1.5);//padding
 
         mBodyPath.reset();
         mBodyPath.addArc(new RectF(
-                0,0,w/2,h
-        ),-90,-180);
+                b,b,w/2-b,h-b
+        ),0,360);
         mBodyPath.addRect(new RectF(
-                w/4,h,w*3/4,0
-        ), Path.Direction.CCW);
+                w/4,b,w*3/4,h-b
+        ), Path.Direction.CW);
         mBodyPath.addArc(new RectF(
-                w/2,0,w,h
-        ),-90,180);
+                w/2+b,b,w-b,h-b
+        ),0,360);
         mBodyPath.close();
 
         requestLayout();
@@ -126,10 +130,11 @@ public class SwitchButton extends View implements View.OnClickListener {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if(progress<changeLength/2)mBodyColor = Color.GREEN;
-        else mBodyColor = Color.RED;
+        if(progress<changeLength/2)mBodyColor = Color.RED;
+        else mBodyColor = Color.GREEN;
 
         mBodyPaint.setColor(mBodyColor);
+        mBodyPaint.setShadowLayer(mShadowWidth,0,mShadowWidth/2,mBodyColor);
         mBodyPaint.setStyle(Paint.Style.FILL);
         canvas.drawPath(mBodyPath,mBodyPaint);
 
@@ -146,20 +151,18 @@ public class SwitchButton extends View implements View.OnClickListener {
         ),mTouchPaint);
     }
 
-    @Override
-    public void onClick(View v) {
+    private void startCheck(){
         if(!onChange){
             Toast.makeText(mContext,"onclick",Toast.LENGTH_SHORT).show();
             AnimatorSet set = new AnimatorSet();
             ObjectAnimator scaleX = ObjectAnimator.ofFloat(this,"scaleX",1,0.9f,1);
             ObjectAnimator scaleY = ObjectAnimator.ofFloat(this,"scaleY",1,0.9f,1);
 
-
-            ValueAnimator valueAnimator = ValueAnimator.ofInt(progress,end);
+            ValueAnimator valueAnimator = ValueAnimator.ofFloat(progress,end);
             valueAnimator.setDuration(1000);
             valueAnimator.setInterpolator(new BounceInterpolator());
             valueAnimator.addUpdateListener(animation -> {
-                progress = (int) animation.getAnimatedValue();
+                progress = (float) animation.getAnimatedValue();
                 System.out.println("progress: "+progress+"  w/2: "+changeLength);
                 if(progress<=changeLength1){
                     progress1 = progress;
@@ -167,12 +170,6 @@ public class SwitchButton extends View implements View.OnClickListener {
                 invalidate();
             });
             valueAnimator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    super.onAnimationStart(animation);
-                    onChange = true;
-                }
-
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
@@ -192,6 +189,12 @@ public class SwitchButton extends View implements View.OnClickListener {
             set.setInterpolator(new BounceInterpolator());
             set.addListener(new AnimatorListenerAdapter() {
                 @Override
+                public void onAnimationStart(Animator animation) {
+                    onChange = true;
+                    super.onAnimationStart(animation);
+                }
+
+                @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
                     valueAnimator.start();
@@ -202,10 +205,37 @@ public class SwitchButton extends View implements View.OnClickListener {
     }
 
 
+
     private int dip2px(float dpValue) {
         final float scale = getContext().getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
     }
 
+    public boolean isChecked() {
+        return progress>=changeLength/2;
+    }
 
+    public void setChecked(boolean checked) {
+        if(checked){
+            if(!isChecked()) startCheck();
+        }else{
+            if(isChecked()) startCheck();
+        }
+    }
+
+    public void setColors(int bodyColor, int touchedColor) {
+        this.mBodyColor = bodyColor;
+        this.mTouchColor = touchedColor;
+        invalidate();
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if(event.getAction() == MotionEvent.ACTION_DOWN) {
+            startCheck();
+            return true;
+        }
+
+        return false;
+    }
 }

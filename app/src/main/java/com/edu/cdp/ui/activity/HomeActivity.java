@@ -104,6 +104,14 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) topPanel.getLayoutParams();
         params.topMargin = AndroidUtils.getStatusBarHeight(this);
         topPanel.setLayoutParams(params);
+
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                binding.switched.setChecked(true);
+            }
+        },2000);
+
         SignEventBus();
 
         userDao = JApplication.getInstance().getDb().userDao();

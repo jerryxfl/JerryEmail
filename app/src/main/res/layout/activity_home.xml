@@ -146,7 +146,8 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
                 <com.edu.cdp.custom.SwitchButton
-                    android:layout_width="wrap_content"
+                    android:id="@+id/switched"
+                    android:layout_width="100dp"
                     android:layout_height="wrap_content"/>
 
             </LinearLayout>
