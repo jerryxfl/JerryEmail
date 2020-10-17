@@ -7,6 +7,7 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -22,11 +23,14 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.edu.cdp.R;
+
 public class SwitchButton extends View implements View.OnTouchListener {
     private Context mContext;
     private int mShadowWidth;
     private int w,h,circleStockWidth;
-    private int mBodyColor = Color.GREEN;
+    private int mBodyColorOpen = Color.GREEN;
+    private int mBodyColorClose = Color.RED;
     private int mTouchColor = Color.WHITE;
     private boolean onChange = false;
 
@@ -55,8 +59,11 @@ public class SwitchButton extends View implements View.OnTouchListener {
         this.mContext = context;
         if(attrs != null){
             //处理自定义属性
-
-
+            TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SwitchButton);
+            mBodyColorOpen = a.getColor(R.styleable.SwitchButton_bodyColorOpen,Color.GREEN);
+            mBodyColorClose = a.getColor(R.styleable.SwitchButton_bodyColorClose,Color.RED);
+            mTouchColor = a.getColor(R.styleable.SwitchButton_touchColor,Color.WHITE);
+            a.recycle();
         }
         Paint p = new Paint();
         p.setAntiAlias(true);
@@ -75,9 +82,6 @@ public class SwitchButton extends View implements View.OnTouchListener {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
 
         int specWidth = 0, specHeight = 0;
         //at_most wrap_content
@@ -131,11 +135,14 @@ public class SwitchButton extends View implements View.OnTouchListener {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if(progress<changeLength/2)mBodyColor = Color.RED;
-        else mBodyColor = Color.GREEN;
+        if(progress<changeLength/2){
+            mBodyPaint.setColor(mBodyColorClose);
+            mBodyPaint.setShadowLayer(mShadowWidth,0,mShadowWidth/2,mBodyColorClose);        }
+        else {
+            mBodyPaint.setColor(mBodyColorOpen);
+            mBodyPaint.setShadowLayer(mShadowWidth,0,mShadowWidth/2,mBodyColorOpen);
+        }
 
-        mBodyPaint.setColor(mBodyColor);
-        mBodyPaint.setShadowLayer(mShadowWidth,0,mShadowWidth/2,mBodyColor);
         mBodyPaint.setStyle(Paint.Style.FILL);
         canvas.drawPath(mBodyPath,mBodyPaint);
 
@@ -227,8 +234,9 @@ public class SwitchButton extends View implements View.OnTouchListener {
         }
     }
 
-    public void setColors(int bodyColor, int touchedColor) {
-        this.mBodyColor = bodyColor;
+    public void setColors(int bodyColorOpen,int bodyColorClose, int touchedColor) {
+        this.mBodyColorOpen = bodyColorOpen;
+        this.mBodyColorClose = bodyColorClose;
         this.mTouchColor = touchedColor;
         invalidate();
     }

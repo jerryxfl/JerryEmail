@@ -17,13 +17,23 @@
             android:id="@+id/topbar"
             android:padding="10dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:background="@drawable/topbar_shape">
+            <ImageButton
+                android:layout_centerVertical="true"
+                android:id="@+id/back"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/back_ios"
+                android:scaleType="centerCrop"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="20dp"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="设置"
-                android:layout_centerHorizontal="true"
+                android:layout_centerInParent="true"
                 android:textSize="20sp"
                 android:textColor="#222222"
                 android:textStyle="bold"/>

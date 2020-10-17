@@ -34,4 +34,11 @@
         </attr>
 
     </declare-styleable>
+
+
+    <declare-styleable name="SwitchButton">
+        <attr name="bodyColorOpen" format="color"/>
+        <attr name="bodyColorClose" format="color"/>
+        <attr name="touchColor" format="color"/>
+    </declare-styleable>
 </resources>

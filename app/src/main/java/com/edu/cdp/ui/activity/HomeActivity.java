@@ -106,32 +106,6 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
         params.topMargin = AndroidUtils.getStatusBarHeight(this);
         topPanel.setLayoutParams(params);
 
-        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                binding.switched.setChecked(true);
-            }
-        },2000);
-
-        binding.switched.addCheckListener(new SwitchButton.CheckListener() {
-            @Override
-            public void onClick() {
-                Toast.makeText(HomeActivity.this, "onclick",Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onOpen() {
-                Toast.makeText(HomeActivity.this, "onOpen",Toast.LENGTH_SHORT).show();
-
-            }
-
-            @Override
-            public void onClose() {
-                Toast.makeText(HomeActivity.this, "onClose",Toast.LENGTH_SHORT).show();
-
-            }
-        });
-
         SignEventBus();
 
         userDao = JApplication.getInstance().getDb().userDao();

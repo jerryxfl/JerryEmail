@@ -4,7 +4,8 @@
     package="com.edu.cdp">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -21,7 +22,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup">
-        <activity android:name=".ui.activity.EmailActivity"></activity>
+        <activity android:name=".ui.activity.GeneralSettingsActivity"></activity>
+        <activity android:name=".ui.activity.EmailActivity" />
         <activity android:name=".ui.activity.EmailListActivity" />
         <activity android:name=".ui.activity.EmailManagerActivity" />
         <activity android:name=".ui.activity.LoginActivity" />

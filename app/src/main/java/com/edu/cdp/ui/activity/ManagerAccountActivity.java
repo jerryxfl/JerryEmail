@@ -47,13 +47,8 @@ public class ManagerAccountActivity extends BaseActivity<ActivityManagerAccountB
     @Override
     protected void setData(ActivityManagerAccountBinding binding) {
         settings = new ArrayList<>();
-        settings.add(new Setting("清除本地缓存", new Setting.Click() {
-            @Override
-            public void click() {
-                userDao.deleteAllUsers();
-                ModelManager.getManager().refreshAccountModel();
-                Toast.makeText(ManagerAccountActivity.this,"清除成功",Toast.LENGTH_SHORT).show();
-            }
+        settings.add(new Setting("通用", () -> {
+            startActivity(new Intent(ManagerAccountActivity.this,GeneralSettingsActivity.class));
         }));
     }
 
@@ -174,6 +169,8 @@ public class ManagerAccountActivity extends BaseActivity<ActivityManagerAccountB
     }
     @Override
     protected void setListeners(ActivityManagerAccountBinding binding) {
-
+        binding.back.setOnClickListener(v->{
+            finish();
+        });
     }
 }
