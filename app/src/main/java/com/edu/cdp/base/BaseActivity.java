@@ -1,25 +1,25 @@
 package com.edu.cdp.base;
 
-import android.Manifest;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LifecycleRegistry;
 
 import com.edu.cdp.ui.dialog.ConfirmDialog;
 import com.edu.cdp.ui.dialog.PermissionDialog;
@@ -30,12 +30,21 @@ import org.greenrobot.eventbus.EventBus;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
-public abstract class BaseActivity<DATABIND extends ViewDataBinding> extends AppCompatActivity {
+public abstract class BaseActivity<DATABIND extends ViewDataBinding> extends AppCompatActivity implements LifecycleOwner {
+    private LifecycleRegistry lifecycleRegistry;
     private ConfirmDialog confirmDialog;
     private String permission;
     private final int NOT_NOTICE = 2;
     private PermissionDialog permissionDialog;
 
+    @NonNull
+    @Override
+    public Lifecycle getLifecycle() {
+        if(lifecycleRegistry==null){
+            lifecycleRegistry = new LifecycleRegistry(this);
+        }
+        return lifecycleRegistry;
+    }
     //获得布局id
     protected abstract int setContentView();
 
@@ -55,6 +64,8 @@ public abstract class BaseActivity<DATABIND extends ViewDataBinding> extends App
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE);
+
         //透明状态栏
         setWindow();
         binding = DataBindingUtil.setContentView(this, setContentView());
@@ -68,13 +79,49 @@ public abstract class BaseActivity<DATABIND extends ViewDataBinding> extends App
         setListeners(binding);
     }
 
-    private void setWindow() {
-        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+        super.onCreate(savedInstanceState, persistentState);
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE);
+
+
+        //透明状态栏
+        setWindow();
+        binding = DataBindingUtil.setContentView(this, setContentView());
+        getSupportActionBar().hide();
+
+        InitApp.getInstance().addActivity(this);
+        mmkv = MMKV.defaultMMKV();
+        setData(binding);
+        binding.setLifecycleOwner(this);
+        initViews(binding);
+        setListeners(binding);
     }
 
-    protected void SignEventBus() {
-        EventBus.getDefault().register(this);
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME);
+    }
+
+    @Override
+    protected void onPause() {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE);
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP);
+        super.onStop();
     }
 
     @Override
@@ -86,7 +133,18 @@ public abstract class BaseActivity<DATABIND extends ViewDataBinding> extends App
         if (confirmDialog != null) {
             confirmDialog.dismissDialog();
         }
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY);
         super.onDestroy();
+    }
+
+
+    private void setWindow() {
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+    }
+
+    protected void SignEventBus() {
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -118,15 +176,17 @@ public abstract class BaseActivity<DATABIND extends ViewDataBinding> extends App
     }
 
 
-    public void RequestPermission(String permission) {
+    public boolean RequestPermission(String permission) {
         this.permission = permission;
         if (ContextCompat.checkSelfPermission(this, permission) != PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{permission}, 1);
+            return false;
         } else {
 //            Toast.makeText(this, "您已经申请了权限!", Toast.LENGTH_SHORT).show();
             //权限已申请
 
             if(permissionDialog!=null)permissionDialog.dismissDialog();
+            return true;
         }
     }
 

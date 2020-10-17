@@ -22,6 +22,10 @@ import android.view.animation.BounceInterpolator;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.OnLifecycleEvent;
 
 import com.edu.cdp.R;
 import com.edu.cdp.base.BaseActivity;
@@ -31,7 +35,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
-public class VoiceView extends View implements View.OnTouchListener {
+public class VoiceView<T extends Context & LifecycleOwner> extends View implements View.OnTouchListener {
+    private T context;
     private BaseActivity baseActivity;
     private Paint mPathPaint, mDownloadPaint;
     private Path path;
@@ -56,22 +61,24 @@ public class VoiceView extends View implements View.OnTouchListener {
     private float progress = 0;
     private int prepareProgress = 1;
     private float errorProgress = 1;
-    private int successProgress = 1;
+    private float successProgress = 1;
 
-    public VoiceView(Context context) {
+    public VoiceView(T context) {
         this(context, (AttributeSet) null);
     }
 
-    public VoiceView(Context context, @Nullable AttributeSet attrs) {
+    public VoiceView(T context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public VoiceView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public VoiceView(T context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
     }
 
-    private void init(Context context, AttributeSet attrs) {
+    private void init(T context, AttributeSet attrs) {
+        this.context = context;
+        this.baseActivity = (BaseActivity) context;
         if (attrs != null) {
         }
         Paint p = new Paint();
@@ -87,6 +94,24 @@ public class VoiceView extends View implements View.OnTouchListener {
         mFileIsDownload = fileIsExists(url);
 
         setOnTouchListener(this);
+
+        Lifecycle lifecycle = context.getLifecycle();
+        lifecycle.addObserver(new LifecycleObserver() {
+            @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+            public void onResume() {
+                resume();
+            }
+
+            @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+            public void onPause() {
+                pause();
+            }
+
+            @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+            public void onDestroy() {
+                stopPlay();
+            }
+        });
     }
 
     @Override
@@ -96,16 +121,26 @@ public class VoiceView extends View implements View.OnTouchListener {
 
             if (x > (width - height)) {
                 Toast.makeText(getContext(), "下载", Toast.LENGTH_SHORT).show();
-                if(baseActivity!=null){
-                    baseActivity.RequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                    baseActivity.RequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
-                    if(!mFileIsDownload)downloadFile(url);
+                if (baseActivity != null) {
+
+                    if (
+                            baseActivity.RequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                    && baseActivity.RequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                                    && !mFileIsDownload
+                    ) downloadFile(url);
                 }
             } else if (x < (width - (height + dip2px(5)))) {
                 Toast.makeText(getContext(), "播放", Toast.LENGTH_SHORT).show();
-                if(baseActivity!=null){
-                    baseActivity.RequestPermission(Manifest.permission.RECORD_AUDIO);
-                    if(mFileIsDownload)playAudio("");
+                if (baseActivity != null) {
+                    if (baseActivity.RequestPermission(Manifest.permission.RECORD_AUDIO) && mFileIsDownload) {
+                        try {
+                            String fileName = url.substring(url.lastIndexOf("/") + 1);
+                            String saveDir = getContext().getFilesDir().toString() + File.separator + "voice" + File.separator + fileName;
+                            playAudio(saveDir);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
 
@@ -126,7 +161,7 @@ public class VoiceView extends View implements View.OnTouchListener {
                     System.out.println(msg);
                     mDownloadStatus = 1;
                     mIsError = true;
-                    mIsSuccess =false;
+                    mIsSuccess = false;
 
                     float sweepAngle = ((360 / max) * progress);
                     ValueAnimator valueAnimator = ValueAnimator.ofFloat(sweepAngle, 0);
@@ -154,12 +189,12 @@ public class VoiceView extends View implements View.OnTouchListener {
                     mDownloadStatus = 1;
                     mIsError = false;
                     mIsSuccess = true;
-                    ValueAnimator valueAnimator = ValueAnimator.ofInt(10, 1);
+                    ValueAnimator valueAnimator = ValueAnimator.ofFloat(height / 2, 0f);
                     valueAnimator.setDuration(500);
                     valueAnimator.setRepeatCount(0);
                     valueAnimator.setInterpolator(new BounceInterpolator());
                     valueAnimator.addUpdateListener(animation -> {
-                        successProgress = (int) animation.getAnimatedValue();
+                        successProgress = (float) animation.getAnimatedValue();
                         invalidate();
                     });
 
@@ -226,18 +261,29 @@ public class VoiceView extends View implements View.OnTouchListener {
         return true;
     }
 
-
-    private void playAudio(String file) {
-        if(mMediaPlayer!=null){
-            if(mMediaPlayer.isPlaying())mMediaPlayer.pause();
-            else {
-                mMediaPlayer.start();
-                if(visualizer!=null){
+    private void pause() {
+        if (mMediaPlayer != null)
+            if (mMediaPlayer.isPlaying()) {
+                mMediaPlayer.pause();
+                if (visualizer != null) {
                     visualizer.setEnabled(false);
-                    if (visualizer != null) {
-                        visualizer.release();
-                    }
+                    visualizer.release();
+                    visualizer = null;
                 }
+                mFft = null;
+                invalidate();
+            }
+    }
+
+    private void resume() {
+        if (mMediaPlayer != null)
+            if (!mMediaPlayer.isPlaying()) {
+                if (visualizer != null) {
+                    visualizer.setEnabled(false);
+                    visualizer.release();
+                    visualizer = null;
+                }
+                mMediaPlayer.start();
                 visualizer = new Visualizer(mMediaPlayer.getAudioSessionId());
                 visualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
                 visualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
@@ -262,8 +308,20 @@ public class VoiceView extends View implements View.OnTouchListener {
                 //开启采样
                 visualizer.setEnabled(true);
             }
-        }else{
-            mMediaPlayer = MediaPlayer.create(getContext(), R.raw.undernoflag);
+    }
+
+
+    private void playAudio(String file) throws IOException {
+        if (mMediaPlayer != null) {
+            if (mMediaPlayer.isPlaying()) {
+                pause();
+            } else {
+                resume();
+            }
+        } else {
+            mMediaPlayer = new MediaPlayer();
+            mMediaPlayer.setDataSource(file);
+            mMediaPlayer.prepare();
             mMediaPlayer.start();
             visualizer = new Visualizer(mMediaPlayer.getAudioSessionId());
             visualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
@@ -300,13 +358,15 @@ public class VoiceView extends View implements View.OnTouchListener {
         }
     }
 
-    public void stopPlay() {
+    private void stopPlay() {
         if (mMediaPlayer != null) {
             if (mMediaPlayer.isPlaying()) {
                 mMediaPlayer.stop();
             }
             mMediaPlayer.release();
             mMediaPlayer = null;
+            mFft = null;
+            invalidate();
         }
     }
 
@@ -384,24 +444,23 @@ public class VoiceView extends View implements View.OnTouchListener {
             mDownloadPaint.setStrokeWidth(h / 10);
             mDownloadPaint.setStrokeCap(Paint.Cap.ROUND);
 
-            if(mIsError || mIsSuccess){
+            if (mIsError || mIsSuccess) {
                 //下载出错或成功
-                if(mIsError){
+                if (mIsError) {
                     mDownloadPaint.setStrokeWidth(h / 10);
                     mDownloadPaint.setStyle(Paint.Style.STROKE);
-                    if(errorProgress<=10) mDownloadPaint.setColor(Color.RED);
+                    if (errorProgress <= 10) mDownloadPaint.setColor(Color.RED);
                     else mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
                     canvas.drawArc(downloadRectF, 0, 360, false, mDownloadPaint);
 
                     mDownloadPaint.setStyle(Paint.Style.FILL);
                     canvas.drawArc(downloadRectF2, -90, errorProgress, true, mDownloadPaint);
-                }else if(mIsSuccess){
-                    int stockWidth = (h/2) /successProgress;
+                } else if (mIsSuccess) {
                     mDownloadPaint.setStyle(Paint.Style.FILL);
                     mDownloadPaint.setColor(Color.parseColor("#56ee9a"));
-                    canvas.drawCircle(w - h / 2, h / 2, h/2-stockWidth, mDownloadPaint);
+                    canvas.drawCircle(w - h / 2, h / 2, successProgress, mDownloadPaint);
                 }
-            }else{
+            } else {
                 //下载未出错
                 mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
                 canvas.drawArc(downloadRectF, 0, 360, false, mDownloadPaint);
@@ -507,16 +566,16 @@ public class VoiceView extends View implements View.OnTouchListener {
     }
 
 
-    public void  setUrl(String url){
-        System.out.println("url:"+url);
+    public void setUrl(String url) {
+        System.out.println("url:" + url);
         this.url = url;
-        fileIsExists(url);
+        mFileIsDownload = fileIsExists(url);
         invalidate();
     }
 
-    public void attach(BaseActivity baseActivity){
-        this.baseActivity = baseActivity;
-    }
+//    public void attach(BaseActivity baseActivity) {
+//        this.baseActivity = baseActivity;
+//    }
 
 }
 
