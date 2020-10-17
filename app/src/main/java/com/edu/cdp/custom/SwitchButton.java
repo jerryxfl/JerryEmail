@@ -33,6 +33,7 @@ public class SwitchButton extends View implements View.OnTouchListener {
     private Paint mBodyPaint,mTouchPaint;
     private Path mBodyPath;
 
+    private CheckListener checkListener;
 
     private float progress = 0,progress1 = 0,end=0,changeLength=0,changeLength1=0;
 
@@ -153,6 +154,7 @@ public class SwitchButton extends View implements View.OnTouchListener {
 
     private void startCheck(){
         if(!onChange){
+            if(checkListener!=null)checkListener.onClick();
             Toast.makeText(mContext,"onclick",Toast.LENGTH_SHORT).show();
             AnimatorSet set = new AnimatorSet();
             ObjectAnimator scaleX = ObjectAnimator.ofFloat(this,"scaleX",1,0.9f,1);
@@ -176,9 +178,11 @@ public class SwitchButton extends View implements View.OnTouchListener {
                     if(end==changeLength){
                         progress = changeLength;
                         end = 0;
+                        if(checkListener!=null)checkListener.onOpen();
                     }else{
                         end = changeLength;
                         progress = 0;
+                        if(checkListener!=null)checkListener.onClose();
                     }
                     onChange = false;
                 }
@@ -229,13 +233,25 @@ public class SwitchButton extends View implements View.OnTouchListener {
         invalidate();
     }
 
+    public void addCheckListener(CheckListener checkListener) {
+        this.checkListener = checkListener;
+    }
+
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if(event.getAction() == MotionEvent.ACTION_DOWN) {
             startCheck();
             return true;
         }
-
         return false;
+    }
+
+
+    public interface CheckListener {
+        void onClick();
+        
+        void onOpen();
+
+        void onClose();
     }
 }

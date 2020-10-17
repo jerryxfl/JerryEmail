@@ -45,6 +45,7 @@ import com.edu.cdp.bean.Email;
 import com.edu.cdp.custom.CircleOnlineAvatar;
 import com.edu.cdp.custom.FurtherAvatar;
 import com.edu.cdp.custom.AvatarView;
+import com.edu.cdp.custom.SwitchButton;
 import com.edu.cdp.database.bean.LocalUser;
 import com.edu.cdp.database.dao.EmailDao;
 import com.edu.cdp.database.dao.UserDao;
@@ -111,6 +112,25 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                 binding.switched.setChecked(true);
             }
         },2000);
+
+        binding.switched.addCheckListener(new SwitchButton.CheckListener() {
+            @Override
+            public void onClick() {
+                Toast.makeText(HomeActivity.this, "onclick",Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onOpen() {
+                Toast.makeText(HomeActivity.this, "onOpen",Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void onClose() {
+                Toast.makeText(HomeActivity.this, "onClose",Toast.LENGTH_SHORT).show();
+
+            }
+        });
 
         SignEventBus();
 
