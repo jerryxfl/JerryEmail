@@ -274,7 +274,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
                     visualizer.release();
                     visualizer = null;
                 }
-                mFft = null;
                 invalidate();
             }
     }
@@ -473,7 +472,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
                 //下载未出错
                 mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
                 canvas.drawArc(downloadRectF, 0, 360, false, mDownloadPaint);
-
                 @SuppressLint("DrawAllocation") Path arrowPath = new Path();
                 if (prepareProgress == 1) {
                     arrowPath.moveTo(w - h / 2, h * 2 / 5);
@@ -491,7 +489,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
                     arrowPath.rQuadTo(h / 5 / 4, 0, h / 5 / 4, -(h / 5 / 4));
                     mDownloadPaint.setStrokeWidth(h / 16);
                     canvas.drawPath(arrowPath, mDownloadPaint);
-
                 } else if (prepareProgress == 3) {
                     arrowPath.moveTo(w - h / 2, h / 5);
                     arrowPath.rLineTo(0, h * 2 / 5);
@@ -499,14 +496,12 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
                     arrowPath.moveTo(w - h / 2, h * 3 / 5);
                     arrowPath.rQuadTo(h / 5 / 5, 0, h / 5 / 5, -(h / 5 / 5));
                     mDownloadPaint.setStrokeWidth(h / 17);
-
                     canvas.drawPath(arrowPath, mDownloadPaint);
 
                 } else if (prepareProgress == 4) {
                     arrowPath.moveTo(w - h / 2, h / 5);
                     arrowPath.lineTo(w - h / 2, h / 2);
                     mDownloadPaint.setStrokeWidth(h / 18);
-
                     canvas.drawPath(arrowPath, mDownloadPaint);
                 } else if (prepareProgress == 5) {
                     arrowPath.moveTo(w - h / 2, h / 5);
@@ -519,8 +514,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
                         mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
                         mDownloadPaint.setStyle(Paint.Style.FILL);
                         float sweepAngle = ((360 / max) * progress);
-                        System.out.println("(360/" + max + ") X " + progress + " = " + sweepAngle);
-
                         canvas.drawArc(downloadRectF2, -90, sweepAngle, true, mDownloadPaint);
                     } else {
                         mDownloadPaint.setColor(Color.parseColor("#ecf0f1"));
@@ -536,20 +529,20 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
         if (mFft == null) {
             mPathPaint.setShader(null);
             mPathPaint.setStyle(Paint.Style.STROKE);
-            mPathPaint.setStrokeWidth(w2 / 16);
+            mPathPaint.setStrokeWidth(w2 / 20);
             mPathPaint.setColor(Color.WHITE);
             mPathPaint.setStrokeCap(Paint.Cap.ROUND);
             for (int i = 1; i < 13; i++) {
-                canvas.drawLine(w2 * i / 13,h * 3 / 4,w2 * i / 13,h * 1 / 4, mPathPaint);
+                if(i%2==0)canvas.drawLine(w2 * i / 13,h * 5 / 8,w2 * i / 13,h * 3 / 8, mPathPaint);
+                else canvas.drawLine(w2 * i / 13,h * 3 / 4,w2 * i / 13,h * 1 / 4, mPathPaint);
             }
         } else {
             mPathPaint.setStyle(Paint.Style.STROKE);
-            mPathPaint.setStrokeWidth(w2 / 16);
+            mPathPaint.setStrokeWidth(w2 / 20);
             mPathPaint.setStrokeCap(Paint.Cap.ROUND);
 
             float start = musicProgress/musicMax;
             float end = 1-start;
-            System.out.println("start:"+start+"  end:"+end);
             @SuppressLint("DrawAllocation") LinearGradient linearGradient
                     = new LinearGradient(0,0,w2,0,
                     new int[]{Color.parseColor("#15aabf"),Color.WHITE},
@@ -572,7 +565,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
     }
 
     public void setUrl(String url) {
-        System.out.println("url:" + url);
         this.url = url;
         mFileIsDownload = fileIsExists(url);
         invalidate();
