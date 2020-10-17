@@ -8,10 +8,12 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.media.MediaPlayer;
 import android.media.audiofx.Visualizer;
 import android.net.Uri;
@@ -63,6 +65,9 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
     private float errorProgress = 1;
     private float successProgress = 1;
 
+
+    private float musicMax=100,musicProgress=0;
+
     public VoiceView(T context) {
         this(context, (AttributeSet) null);
     }
@@ -110,6 +115,7 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
             @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
             public void onDestroy() {
                 stopPlay();
+                lifecycle.removeObserver(this);
             }
         });
     }
@@ -120,7 +126,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
             int x = (int) event.getX();
 
             if (x > (width - height)) {
-                Toast.makeText(getContext(), "下载", Toast.LENGTH_SHORT).show();
                 if (baseActivity != null) {
 
                     if (
@@ -130,7 +135,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
                     ) downloadFile(url);
                 }
             } else if (x < (width - (height + dip2px(5)))) {
-                Toast.makeText(getContext(), "播放", Toast.LENGTH_SHORT).show();
                 if (baseActivity != null) {
                     if (baseActivity.RequestPermission(Manifest.permission.RECORD_AUDIO) && mFileIsDownload) {
                         try {
@@ -341,16 +345,21 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
                         i += 2;
                         j++;
                     }
+                    if(mMediaPlayer!=null)musicProgress = mMediaPlayer.getCurrentPosition();
                     invalidate();
                 }
             }, Visualizer.getMaxCaptureRate() / 2, true, true);
             //开启采样
             visualizer.setEnabled(true);
 
+            mMediaPlayer.setOnPreparedListener(mp -> {
+                musicMax = mp.getDuration();
+            });
             mMediaPlayer.setOnCompletionListener(mp -> {
                 visualizer.setEnabled(false);
                 if (visualizer != null) {
                     visualizer.release();
+                    visualizer = null;
                 }
                 mFft = null;
                 invalidate();
@@ -369,7 +378,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
             invalidate();
         }
     }
-
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -433,6 +441,7 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
         int h = getHeight();
         int w2 = w - (h + dip2px(5));
 
+        mPathPaint.setShader(null);
         mPathPaint.setStyle(Paint.Style.FILL);
         mPathPaint.setColor(Color.parseColor("#2ecc71"));
         canvas.drawPath(path, mPathPaint);
@@ -525,33 +534,35 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
 
         //画柱状波形图
         if (mFft == null) {
+            mPathPaint.setShader(null);
             mPathPaint.setStyle(Paint.Style.STROKE);
-            mPathPaint.setStrokeWidth(w2 / 15);
+            mPathPaint.setStrokeWidth(w2 / 16);
             mPathPaint.setColor(Color.WHITE);
             mPathPaint.setStrokeCap(Paint.Cap.ROUND);
-            @SuppressLint("DrawAllocation") float[] mPoints = new float[63];
             for (int i = 1; i < 13; i++) {
-                mPoints[i * 4] = w2 * i / 13;
-                mPoints[i * 4 + 1] = h * 3 / 4;
-                mPoints[i * 4 + 2] = w2 * i / 13;
-                mPoints[i * 4 + 3] = h * 3 / 4;
+                canvas.drawLine(w2 * i / 13,h * 3 / 4,w2 * i / 13,h * 1 / 4, mPathPaint);
             }
-            canvas.drawLines(mPoints, mPathPaint);
         } else {
             mPathPaint.setStyle(Paint.Style.STROKE);
-            mPathPaint.setStrokeWidth(w2 / 15);
-            mPathPaint.setColor(Color.WHITE);
+            mPathPaint.setStrokeWidth(w2 / 16);
             mPathPaint.setStrokeCap(Paint.Cap.ROUND);
-            @SuppressLint("DrawAllocation") float[] mPoints = new float[mFft.length * 4];
+
+            float start = musicProgress/musicMax;
+            float end = 1-start;
+            System.out.println("start:"+start+"  end:"+end);
+            @SuppressLint("DrawAllocation") LinearGradient linearGradient
+                    = new LinearGradient(0,0,w2,0,
+                    new int[]{Color.parseColor("#15aabf"),Color.WHITE},
+                    new float[]{start,end},
+                    Shader.TileMode.CLAMP);
+
+            mPathPaint.setShader(linearGradient);
             for (int i = 1; i < 13; i++) {
                 if (mFft[i] > h / 2 || mFft[i] == 0 || mFft[i] < 0)
                     mFft[i] = (byte) random.nextInt(h / 2);
-                mPoints[i * 4] = w2 * i / 13;
-                mPoints[i * 4 + 1] = h * 3 / 4;
-                mPoints[i * 4 + 2] = w2 * i / 13;
-                mPoints[i * 4 + 3] = h * 3 / 4 - mFft[i];
+
+                canvas.drawLine(w2 * i / 13,h * 3 / 4,w2 * i / 13,h * 3 / 4 - mFft[i], mPathPaint);
             }
-            canvas.drawLines(mPoints, mPathPaint);
         }
     }
 
@@ -560,22 +571,11 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
         return (int) (dpValue * scale + 0.5f);
     }
 
-    private int px2dip(float pxValue) {
-        final float scale = getContext().getResources().getDisplayMetrics().density;
-        return (int) (pxValue / scale + 0.5f);
-    }
-
-
     public void setUrl(String url) {
         System.out.println("url:" + url);
         this.url = url;
         mFileIsDownload = fileIsExists(url);
         invalidate();
     }
-
-//    public void attach(BaseActivity baseActivity) {
-//        this.baseActivity = baseActivity;
-//    }
-
 }
 

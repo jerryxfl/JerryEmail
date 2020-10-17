@@ -69,7 +69,6 @@ public class EmailActivity extends BaseActivity<ActivityEmailBinding> {
         binding.loadingView.setLoadingStyle(random.nextInt(4)+1);
 //       res = random().nextInt(n-m+1)+m;  m,n
 
-        
         jxContentAndSet(email.getContent());
         
         
@@ -77,6 +76,7 @@ public class EmailActivity extends BaseActivity<ActivityEmailBinding> {
     }
 
     private void jxContentAndSet(String content) {
+        System.out.println("内容----------："+content);
         JSONObject jsonObject = JSONObject.parseObject(content);
         for (String key:jsonObject.keySet()) {
             System.out.println("内容下子节点："+key);
@@ -87,6 +87,7 @@ public class EmailActivity extends BaseActivity<ActivityEmailBinding> {
                     LinearLayout.LayoutParams  params =  new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
                     params.leftMargin = 20;
                     params.topMargin = 20;
+                    params.bottomMargin = 20;
                     textView.setLayoutParams(params);
                     binding.other.addView(textView);
                     break;
@@ -95,19 +96,16 @@ public class EmailActivity extends BaseActivity<ActivityEmailBinding> {
                     break;
                 case "voice":
                     VoiceView<EmailActivity> voiceView = new VoiceView<EmailActivity>(this);
-//                    voiceView.attach(EmailActivity.this);
                     voiceView.setUrl(jsonObject.getString(key));
                     LinearLayout.LayoutParams  params1 =  new LinearLayout.LayoutParams(100,100);
                     params1.leftMargin = 20;
                     params1.topMargin = 20;
+                    params1.bottomMargin = 20;
                     voiceView.setLayoutParams(params1);
                     binding.other.addView(voiceView);
                     break;
             }
         }
-        
-        
-        
     }
 
 
@@ -171,3 +169,11 @@ public class EmailActivity extends BaseActivity<ActivityEmailBinding> {
         }
     };
 }
+//{
+//        "text":"title",
+//        "link":"https://www.baidu.com/",
+//        "voice":"http://47.98.223.82:8080/JerryEmail/resources/voice/undernoflag.wav",
+//        "voice":"http://47.98.223.82:8080/JerryEmail/resources/voice/light.mp3",
+//        "voice":"http://47.98.223.82:8080/JerryEmail/resources/voice/tellme.mp3",
+//        "voice":"http://47.98.223.82:8080/JerryEmail/resources/voice/tottabyte.mp3"
+//}
