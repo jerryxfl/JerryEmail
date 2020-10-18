@@ -90,9 +90,8 @@ public class GeneralSettingsActivity extends BaseActivity<ActivityGeneralSetting
         );
 
 
-        AdapterList<Setting2> settings = new AdapterList<Setting2>();
+        AdapterList<Setting2> settings = new AdapterList<>();
         settings.relevantAdapter(setting2JAdapter.adapter);
-
 
         settings.add(new Setting2(0));
         settings.add(new Setting2("清除已下载语音", 1, () -> {
@@ -109,7 +108,7 @@ public class GeneralSettingsActivity extends BaseActivity<ActivityGeneralSetting
             int voice = mmkv.decodeInt("voice");
 
             if (voice == 1) {
-                new Handler(Looper.getMainLooper()).postDelayed(() -> switchButton.setChecked(true), 200);
+                new Handler(Looper.getMainLooper()).postDelayed(() -> switchButton.setChecked(true), 50);
             }
 
             switchButton.addCheckListener(new SwitchButton.CheckListener() {
