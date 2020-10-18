@@ -37,19 +37,10 @@
                 android:layout_alignParentBottom="true"
                 android:layout_marginBottom="15dp"/>
         </RelativeLayout>
-        <RelativeLayout
-            android:orientation="vertical"
-            android:background="#F1F2F6"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/settings"
+            android:background="#ecf0f1"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <com.edu.cdp.custom.SwitchButton
-                android:layout_margin="50dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentBottom="true"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"/>
-
-        </RelativeLayout>
+            android:layout_height="match_parent"/>
     </LinearLayout>
 </layout>

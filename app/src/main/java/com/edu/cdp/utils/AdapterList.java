@@ -7,6 +7,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView.Adapter;
 
+import com.edu.cdp.adapter.BaseAdapter;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -16,11 +18,12 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 public  class AdapterList<T> extends ArrayList<T> {
-    private Adapter adapter;
+    private BaseAdapter<T> adapter;
 
     //关联适配器
-    public void relevantAdapter(Adapter adapter){
+    public void relevantAdapter(BaseAdapter<T> adapter){
         this.adapter = adapter;
+        adapter.setData(this);
     }
 
 

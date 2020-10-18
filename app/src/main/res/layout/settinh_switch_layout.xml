@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#ffffff">
     <RelativeLayout
         android:id="@+id/container"
@@ -17,13 +18,13 @@
             android:layout_height="wrap_content"
             android:text="设置"/>
 
-        <ImageButton
+        <com.edu.cdp.custom.SwitchButton
+            android:id="@+id/switch_button"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:background="@null"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/next"
             android:layout_alignParentEnd="true"
-            android:scaleType="centerCrop" />
+            app:bodyColorOpen="#3498db"
+            app:bodyColorClose="#bdc3c7"/>
     </RelativeLayout>
 </RelativeLayout>

@@ -162,7 +162,6 @@ public class SwitchButton extends View implements View.OnTouchListener {
     private void startCheck(){
         if(!onChange){
             if(checkListener!=null)checkListener.onClick();
-            Toast.makeText(mContext,"onclick",Toast.LENGTH_SHORT).show();
             AnimatorSet set = new AnimatorSet();
             ObjectAnimator scaleX = ObjectAnimator.ofFloat(this,"scaleX",1,0.9f,1);
             ObjectAnimator scaleY = ObjectAnimator.ofFloat(this,"scaleY",1,0.9f,1);

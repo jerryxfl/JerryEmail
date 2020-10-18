@@ -305,6 +305,7 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
                             i += 2;
                             j++;
                         }
+                        if(mMediaPlayer!=null)musicProgress = mMediaPlayer.getCurrentPosition();
                         invalidate();
                     }
                 }, Visualizer.getMaxCaptureRate() / 2, true, true);
