@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
+import android.animation.TypeEvaluator;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -128,8 +130,6 @@ public class GeneralSettingsActivity extends BaseActivity<ActivityGeneralSetting
                 }
             });
         }));
-
-
     }
 
     @Override

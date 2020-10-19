@@ -105,7 +105,6 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
         SoftKeyBoardListener.setListener(this, new SoftKeyBoardListener.OnSoftKeyBoardChangeListener() {
             @Override
             public void keyBoardShow(int height) {
-                Toast.makeText(LoginActivity.this, "键盘显示 高度" + height, Toast.LENGTH_SHORT).show();
 
                 if(valueAnimator!=null){
                     if(valueAnimator.isRunning()){
@@ -125,7 +124,6 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
 
             @Override
             public void keyBoardHide(int height) {
-                Toast.makeText(LoginActivity.this, "键盘隐藏 高度" + height, Toast.LENGTH_SHORT).show();
                 if(valueAnimator!=null){
                     if(valueAnimator.isRunning()){
                         valueAnimator.cancel();
