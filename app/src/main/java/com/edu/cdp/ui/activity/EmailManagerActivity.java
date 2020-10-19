@@ -4,18 +4,14 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.MotionEvent;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,12 +26,10 @@ import com.bumptech.glide.request.transition.Transition;
 import com.edu.cdp.R;
 import com.edu.cdp.adapter.BaseViewHolder;
 import com.edu.cdp.adapter.JAdapter;
-import com.edu.cdp.application.JApplication;
 import com.edu.cdp.base.BaseActivity;
 import com.edu.cdp.bean.Account;
 import com.edu.cdp.bean.Constants;
 import com.edu.cdp.bean.EmailBox;
-import com.edu.cdp.database.dao.EmailDao;
 import com.edu.cdp.databinding.ActivityEmailManagerBinding;
 import com.edu.cdp.net.okhttp.OkHttpUtils;
 import com.edu.cdp.utils.AndroidUtils;
@@ -103,19 +97,17 @@ public class EmailManagerActivity extends BaseActivity<ActivityEmailManagerBindi
                         final TextView msgNumber = holder.findViewById(R.id.msgNum);
                         TextView title = holder.findViewById(R.id.title);
 
-                        click.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                Intent intent = new Intent(EmailManagerActivity.this,EmailListActivity.class);
-                                Bundle bundle = new Bundle();
-                                bundle.putSerializable("account",account);
-                                intent.putExtras(bundle);
-                                intent.putExtra("type",position+1);
-                                intent.putExtra("num",emailBox.getMsg_num());
-                                startActivity(intent);
+                        click.setOnClickListener(view -> {
+                            Intent intent1 = new Intent(EmailManagerActivity.this,EmailListActivity.class);
+                            Bundle bundle = new Bundle();
+                            bundle.putSerializable("account",account);
+                            intent1.putExtras(bundle);
+                            intent1.putExtra("type",position+1);
+                            intent1.putExtra("num",emailBox.getMsg_num());
+                            startActivity(intent1);
+                            overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_left);
 
-                                if(emailBox.getItemClickListener()!=null)emailBox.getItemClickListener().onItemClick();
-                            }
+                            if(emailBox.getItemClickListener()!=null)emailBox.getItemClickListener().onItemClick();
                         });
                         container.setCardBackgroundColor(emailBox.getBackgroundColor());
                         icon.setImageBitmap(BitmapFactory.decodeResource(getResources(), emailBox.getIcon()));
@@ -160,17 +152,9 @@ public class EmailManagerActivity extends BaseActivity<ActivityEmailManagerBindi
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void setListeners(ActivityEmailManagerBinding binding) {
-        binding.back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+        binding.back.setOnClickListener(view -> finish());
 
-        binding.avatar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            }
+        binding.avatar.setOnClickListener(view -> {
         });
     }
 

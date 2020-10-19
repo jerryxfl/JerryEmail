@@ -41,7 +41,9 @@ import com.edu.cdp.utils.AndroidUtils;
 import com.edu.cdp.utils.GsonUtil;
 import com.google.gson.Gson;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,7 +128,7 @@ public class EmailListActivity extends BaseActivity<ActivityEmailListBinding> {
                                     });
 
                             title.setText(email.getTitle());
-                            time.setText("5分钟之前");
+                            time.setText(timeUtile(new Date(email.getTime())));
                             msgNumber.setText("1");
 
                             JSONObject json = JSONObject.parseObject(email.getContent());
@@ -149,7 +151,7 @@ public class EmailListActivity extends BaseActivity<ActivityEmailListBinding> {
                                         }
                                     });
                             title.setText(email.getTitle());
-                            time.setText("2分钟之前");
+                            time.setText(timeUtile(new Date(email.getTime())));
                             JSONObject json = JSONObject.parseObject(email.getContent());
                             String text = !json.containsKey("text")||json.getString("text").equals("")?"进入查看":json.getString("text");
                             content.setText(text);
@@ -305,6 +307,55 @@ public class EmailListActivity extends BaseActivity<ActivityEmailListBinding> {
     private static int dip2px(Context context, float dpValue) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
+    }
+
+
+    private String timeUtile(Date inTime) {
+        // 拿到当前时间戳和发布时的时间戳，然后得出时间戳差
+        Date curTime = new Date();
+        long timeDiff = curTime.getTime() - inTime.getTime();
+        //上面一行代码可以换成以下（兼容性的解决）
+
+        // 单位换算
+        long min = 60 * 1000;
+        long hour = min * 60;
+        long day = hour * 24;
+        long week = day * 7;
+        long month = week * 4;
+        long year = month * 12;
+        DecimalFormat df = new DecimalFormat("#");
+        // 计算发布时间距离当前时间的周、天、时、分
+        double exceedyear = Math.floor(timeDiff / year);
+        double exceedmonth = Math.floor(timeDiff / month);
+        double exceedWeek = Math.floor(timeDiff / week);
+        double exceedDay = Math.floor(timeDiff / day);
+        double exceedHour = Math.floor(timeDiff / hour);
+        double exceedMin = Math.floor(timeDiff / min);
+
+
+        // 最后判断时间差到底是属于哪个区间，然后return
+
+        if (exceedyear < 100 && exceedyear > 0) {
+            return df.format(exceedyear) + "年前";
+        } else {
+            if (exceedmonth < 12 && exceedmonth > 0) {
+                return df.format(exceedmonth) + "月前";
+            } else {
+                if (exceedWeek < 4 && exceedWeek > 0) {
+                    return df.format(exceedWeek) + "星期前";
+                } else {
+                    if (exceedDay < 7 && exceedDay > 0) {
+                        return df.format(exceedDay) + "天前";
+                    } else {
+                        if (exceedHour < 24 && exceedHour > 0) {
+                            return df.format(exceedHour) + "小时前";
+                        } else {
+                            return df.format(exceedMin) + "分钟前";
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }
