@@ -1,11 +1,13 @@
 package com.edu.cdp.ui.activity;
 
+import android.animation.ValueAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 
@@ -30,6 +32,7 @@ import com.edu.cdp.model.manager.ModelManager;
 import com.edu.cdp.net.okhttp.OkHttpUtils;
 import com.edu.cdp.request.Login;
 import com.edu.cdp.ui.dialog.LoadingDialog;
+import com.edu.cdp.utils.SoftKeyBoardListener;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -41,6 +44,7 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
     private LoadingDialog loadingDialog;
     private UserDao userDao;
     private LocalUser login;
+    private ValueAnimator valueAnimator;
 
     @Override
     protected int setContentView() {
@@ -96,10 +100,46 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
             }
         });
 
-        binding.loginbtn.setOnClickListener(new View.OnClickListener() {
+        binding.loginbtn.setOnClickListener(view -> loadingDialog.showDialog());
+
+        SoftKeyBoardListener.setListener(this, new SoftKeyBoardListener.OnSoftKeyBoardChangeListener() {
             @Override
-            public void onClick(View view) {
-                loadingDialog.showDialog();
+            public void keyBoardShow(int height) {
+                Toast.makeText(LoginActivity.this, "键盘显示 高度" + height, Toast.LENGTH_SHORT).show();
+
+                if(valueAnimator!=null){
+                    if(valueAnimator.isRunning()){
+                        valueAnimator.cancel();
+                    }
+                }
+                valueAnimator = ValueAnimator.ofInt(0,height);
+                valueAnimator.setDuration(200);
+                valueAnimator.addUpdateListener(animation -> {
+                    int progress = (int) animation.getAnimatedValue();
+                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.bottom.getLayoutParams();
+                    params.height = progress;
+                    binding.bottom.setLayoutParams(params);
+                });
+                valueAnimator.start();
+            }
+
+            @Override
+            public void keyBoardHide(int height) {
+                Toast.makeText(LoginActivity.this, "键盘隐藏 高度" + height, Toast.LENGTH_SHORT).show();
+                if(valueAnimator!=null){
+                    if(valueAnimator.isRunning()){
+                        valueAnimator.cancel();
+                    }
+                }
+                valueAnimator = ValueAnimator.ofInt(height,0);
+                valueAnimator.setDuration(200);
+                valueAnimator.addUpdateListener(animation -> {
+                    int progress = (int) animation.getAnimatedValue();
+                    LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.bottom.getLayoutParams();
+                    params.height = progress;
+                    binding.bottom.setLayoutParams(params);
+                });
+                valueAnimator.start();
             }
         });
     }
