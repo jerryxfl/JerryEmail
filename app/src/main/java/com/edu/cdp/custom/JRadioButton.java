@@ -13,6 +13,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.BounceInterpolator;
 
 import androidx.annotation.Nullable;
@@ -31,6 +32,7 @@ public class JRadioButton extends View implements View.OnTouchListener {
 
     private float progress = 0;
 
+    private CheckListener checkListener;
 
     public JRadioButton(Context context) {
         this(context,null);
@@ -80,6 +82,7 @@ public class JRadioButton extends View implements View.OnTouchListener {
 
     private void changeStatus() {
         if(!onChange){
+            if(checkListener!=null)checkListener.onCLick();
             AnimatorSet set = new AnimatorSet();
 
             ObjectAnimator scaleX = ObjectAnimator.ofFloat(this,"scaleX",1,0.8f,1);
@@ -98,7 +101,7 @@ public class JRadioButton extends View implements View.OnTouchListener {
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
                         progress = w/2-outlineWidth*2;
-                        onChange = false;
+                        if(checkListener!=null)checkListener.onUnCheck();
                     }
                 });
             }else{
@@ -113,22 +116,19 @@ public class JRadioButton extends View implements View.OnTouchListener {
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
                         progress = 0;
-                        onChange = false;
+                        if(checkListener!=null)checkListener.onCheck();
                     }
                 });
             }
-            valueAnimator.setDuration(500);
-            valueAnimator.setInterpolator(new BounceInterpolator());
 
-            set.playTogether(scaleX,scaleY);
+            set.playTogether(scaleX,scaleY,valueAnimator);
             set.setDuration(200);
-            set.setInterpolator(new BounceInterpolator());
-            ValueAnimator finalValueAnimator = valueAnimator;
+            set.setInterpolator(new AccelerateDecelerateInterpolator());
             set.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
-                    finalValueAnimator.start();
+                    onChange = false;
                 }
 
                 @Override
@@ -200,5 +200,37 @@ public class JRadioButton extends View implements View.OnTouchListener {
         return (int) (dpValue * scale + 0.5f);
     }
 
+
+    public boolean isCheck(){
+        return  progress<(w/2-outlineWidth*2)/2;
+    }
+
+
+    public void setCheck(boolean check){
+        if(check&&!isCheck()){
+            changeStatus();
+        }else if(!check&&isCheck()){
+            changeStatus();
+        }
+    }
+
+    public  void  setCheckListener(CheckListener checkListener){
+        this.checkListener = checkListener;
+    }
+
+    public  void  setColor(int selectColor,int unSelectColor){
+        this.selected = selectColor;
+        this.unSelected = unSelectColor;
+        invalidate();
+    }
+
+
+    public interface CheckListener{
+        void onCLick();
+
+        void onCheck();
+
+        void onUnCheck();
+    }
 
 }
