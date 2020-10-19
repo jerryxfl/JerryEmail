@@ -73,7 +73,7 @@ public class SwitchButton extends View implements View.OnTouchListener {
 
         mBodyPath = new Path();
 
-        setOnTouchListener(this::onTouch);
+        setOnTouchListener(this);
     }
 
 

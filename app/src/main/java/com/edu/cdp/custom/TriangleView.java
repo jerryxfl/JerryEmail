@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 
 import com.edu.cdp.R;
 
+//三角形控件
 public class TriangleView extends View {
     private Paint mPaint;
     private Path path;
