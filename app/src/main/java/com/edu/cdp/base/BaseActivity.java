@@ -139,6 +139,7 @@ public abstract class BaseActivity<DATABIND extends ViewDataBinding> extends App
 
 
     private void setWindow() {
+        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);//可使用切换动画
         getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
     }

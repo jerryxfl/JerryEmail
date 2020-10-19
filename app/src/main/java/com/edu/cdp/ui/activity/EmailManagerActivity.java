@@ -105,7 +105,7 @@ public class EmailManagerActivity extends BaseActivity<ActivityEmailManagerBindi
                             intent1.putExtra("type",position+1);
                             intent1.putExtra("num",emailBox.getMsg_num());
                             startActivity(intent1);
-                            overridePendingTransition(R.anim.slide_in_left,R.anim.slide_out_left);
+                            overridePendingTransition(R.anim.slide_in_from_left,R.anim.slide_out_to_right);
 
                             if(emailBox.getItemClickListener()!=null)emailBox.getItemClickListener().onItemClick();
                         });
