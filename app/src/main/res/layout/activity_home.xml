@@ -145,10 +145,6 @@
                             android:overScrollMode="never"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
-
-                <com.edu.cdp.custom.JRadioButton
-                    android:layout_width="20dp"
-                    android:layout_height="100dp"/>
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </RelativeLayout>

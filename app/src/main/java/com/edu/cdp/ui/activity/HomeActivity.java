@@ -1,8 +1,6 @@
 package com.edu.cdp.ui.activity;
 
 
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
@@ -12,8 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -23,7 +19,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -45,35 +40,30 @@ import com.edu.cdp.bean.Email;
 import com.edu.cdp.custom.CircleOnlineAvatar;
 import com.edu.cdp.custom.FurtherAvatar;
 import com.edu.cdp.custom.AvatarView;
-import com.edu.cdp.custom.SwitchButton;
 import com.edu.cdp.database.bean.LocalUser;
 import com.edu.cdp.database.dao.EmailDao;
 import com.edu.cdp.database.dao.UserDao;
 import com.edu.cdp.databinding.ActivityHomeBinding;
 import com.edu.cdp.eventbus.event.LoginEvent;
+import com.edu.cdp.jni.TestJni;
 import com.edu.cdp.model.manager.ModelManager;
 import com.edu.cdp.net.okhttp.OkHttpUtils;
 import com.edu.cdp.net.websocket.CommandType;
-import com.edu.cdp.net.websocket.JWebSocketListener;
 import com.edu.cdp.net.websocket.JWebSocketListener2;
 import com.edu.cdp.net.websocket.WebSocketManager;
 import com.edu.cdp.net.websocket.bean.ServerRequest;
 import com.edu.cdp.request.Login;
 import com.edu.cdp.response.User;
-import com.edu.cdp.ui.dialog.ConfirmDialog;
-import com.edu.cdp.ui.dialog.UserInfoBottomDialog;
 import com.edu.cdp.ui.popupwindow.PopMenu;
 import com.edu.cdp.utils.AndroidUtils;
 import com.edu.cdp.utils.GsonUtil;
 import com.edu.cdp.utils.VibrationUtils;
-import com.tencent.mmkv.MMKV;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -81,9 +71,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import okhttp3.Response;
-import okio.ByteString;
 
 public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
     private UserDao userDao;
@@ -107,6 +94,7 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
         topPanel.setLayoutParams(params);
 
         SignEventBus();
+
 
         userDao = JApplication.getInstance().getDb().userDao();
         emailDao = JApplication.getInstance().getDb().EmailDao();
@@ -148,12 +136,11 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
     }
 
 
-
     @Override
     protected void onDestroy() {
         WebSocketClient client = WebSocketManager.getInstance().getClient();
-        if(client!=null) {
-            if(client.isOpen())client.close();
+        if (client != null) {
+            if (client.isOpen()) client.close();
         }
         super.onDestroy();
     }
@@ -169,83 +156,79 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                 binding.contactRecyclerview,
                 new int[]{R.layout.contact_head_layout, R.layout.contact_layout},
                 new JAdapter.DataListener<Contact>() {
-            @Override
-            public void initItem(BaseViewHolder holder, int position, List<Contact> data) {
-                final Contact contact = data.get(position);
-                if (contact.getLocalUser() == null) {
-                    ImageView avatarView = holder.findViewById(R.id.avatar);
-                    TextView contactName = holder.findViewById(R.id.name);
+                    @Override
+                    public void initItem(BaseViewHolder holder, int position, List<Contact> data) {
+                        final Contact contact = data.get(position);
+                        if (contact.getLocalUser() == null) {
+                            ImageView avatarView = holder.findViewById(R.id.avatar);
+                            TextView contactName = holder.findViewById(R.id.name);
 
-                    avatarView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.add));
-                    contactName.setText("Add");
-                    avatarView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Toast.makeText(HomeActivity.this, "添加新联系人", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } else {
-                    final AvatarView avatarView = holder.findViewById(R.id.avatar);
-                    TextView contactName = holder.findViewById(R.id.name);
+                            avatarView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.add));
+                            contactName.setText("Add");
+                            avatarView.setOnClickListener(v -> {
+                                //添加新联系人
 
-                    avatarView.setOnline(contact.isOnline());
-                    Glide.with(HomeActivity.this)
-                            .load(contact.getLocalUser().getAvatar())
-                            .into(new SimpleTarget<Drawable>() {
-                                @Override
-                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                    avatarView.setDrawable(resource);
-                                }
+
+
+
                             });
+                        } else {
+                            final AvatarView avatarView = holder.findViewById(R.id.avatar);
+                            TextView contactName = holder.findViewById(R.id.name);
 
-                    contactName.setText(contact.getLocalUser().getNickname());
-                    avatarView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            UserInfoBottomDialog userInfoBottomDialog = new UserInfoBottomDialog(HomeActivity.this,contact);
-                            userInfoBottomDialog.showDialog();
-                        }
-                    });
-                    avatarView.setOnLongClickListener(new View.OnLongClickListener() {
-                        @Override
-                        public boolean onLongClick(View view) {
-                            PopMenu popMenu = new PopMenu(HomeActivity.this,
-                                    ModelManager.getManager().getMainAccountModel().getUser().getValue(),
-                                    contact,
-                                    avatarView);
-                            popMenu.showPopUpWindow(avatarView,-60,0);
-                            return true;
-                        }
-                    });
-                }
-            }
+                            avatarView.setOnline(contact.isOnline());
+                            Glide.with(HomeActivity.this)
+                                    .load(contact.getLocalUser().getAvatar())
+                                    .into(new SimpleTarget<Drawable>() {
+                                        @Override
+                                        public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                            avatarView.setDrawable(resource);
+                                        }
+                                    });
 
-            @Override
-            public void updateItem(BaseViewHolder holder, int position, List<Contact> data, String tag) {
-                Contact contact = data.get(position);
-                final AvatarView avatarView = holder.findViewById(R.id.avatar);
-                TextView contactName = holder.findViewById(R.id.name);
+                            contactName.setText(contact.getLocalUser().getNickname());
+                            avatarView.setOnClickListener(v -> {
+                                //发送邮件
 
-                if ("onlineChange".equals(tag)) {
-                    avatarView.setOnline(contact.isOnline());
-                    Glide.with(HomeActivity.this)
-                            .load(contact.getLocalUser().getAvatar())
-                            .into(new SimpleTarget<Drawable>() {
-                                @Override
-                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                    avatarView.setDrawable(resource);
-                                }
+
                             });
-                    contactName.setText(contact.getLocalUser().getNickname());
-                }
-            }
+                            avatarView.setOnLongClickListener(view -> {
+                                PopMenu popMenu = new PopMenu(HomeActivity.this,
+                                        ModelManager.getManager().getMainAccountModel().getUser().getValue(),
+                                        contact,
+                                        avatarView);
+                                popMenu.showPopUpWindow(avatarView, -60, 0);
+                                return true;
+                            });
+                        }
+                    }
 
-            @Override
-            public int getItemViewType(int position, List<Contact> data) {
-                if (data.get(position).getLocalUser() == null) return 0;
-                else return 1;
-            }
-        });
+                    @Override
+                    public void updateItem(BaseViewHolder holder, int position, List<Contact> data, String tag) {
+                        Contact contact = data.get(position);
+                        final AvatarView avatarView = holder.findViewById(R.id.avatar);
+                        TextView contactName = holder.findViewById(R.id.name);
+
+                        if ("onlineChange".equals(tag)) {
+                            avatarView.setOnline(contact.isOnline());
+                            Glide.with(HomeActivity.this)
+                                    .load(contact.getLocalUser().getAvatar())
+                                    .into(new SimpleTarget<Drawable>() {
+                                        @Override
+                                        public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                            avatarView.setDrawable(resource);
+                                        }
+                                    });
+                            contactName.setText(contact.getLocalUser().getNickname());
+                        }
+                    }
+
+                    @Override
+                    public int getItemViewType(int position, List<Contact> data) {
+                        if (data.get(position).getLocalUser() == null) return 0;
+                        else return 1;
+                    }
+                });
 
         ModelManager.getManager().getContactModel().getContacts().observe(this, new Observer<List<Contact>>() {
             @Override
@@ -357,15 +340,15 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                             name.setText(account.getLocalUser().getNickname() + "的收件箱");
                             if (account.getLocalUser().getUUID() == null) {
                                 //账号未登陆状态
-                                mailNum.setBackground(ContextCompat.getDrawable(HomeActivity.this,R.drawable.unlogin_sl));
+                                mailNum.setBackground(ContextCompat.getDrawable(HomeActivity.this, R.drawable.unlogin_sl));
                                 mailNum.setTextColor(Color.WHITE);
                                 mailNum.setText("请重新登录");
                                 container.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View view) {
-                                        Intent intent = new Intent(HomeActivity.this,LoginActivity.class);
+                                        Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
                                         Bundle bundle = new Bundle();
-                                        bundle.putSerializable("login",account.getLocalUser());
+                                        bundle.putSerializable("login", account.getLocalUser());
                                         intent.putExtras(bundle);
                                         startActivity(intent);
                                     }
@@ -376,9 +359,9 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                                 mailNum.setBackground(null);
 
                                 int num = emailDao.loadAllInbox(account.getLocalUser().getId()).size();
-                                if(account.getEmailNum()>num){
+                                if (account.getEmailNum() > num) {
                                     mailNum.setTextColor(Color.parseColor("#3498db"));
-                                }else{
+                                } else {
                                     mailNum.setTextColor(Color.GRAY);
                                 }
 
@@ -388,7 +371,7 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                                     public void onClick(View view) {
                                         Intent intent = new Intent(HomeActivity.this, EmailManagerActivity.class);
                                         Bundle bundle = new Bundle();
-                                        bundle.putSerializable("account",account);
+                                        bundle.putSerializable("account", account);
                                         intent.putExtras(bundle);
                                         HomeActivity.this.startActivity(intent);
                                     }
@@ -473,16 +456,16 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
     private void Auto(boolean autuLogin) {
         List<Account> accounts = ModelManager.getManager().getAccountModel().getAccounts().getValue();
         assert accounts != null;
-        if(accounts.isEmpty())return;
+        if (accounts.isEmpty()) return;
         for (Account account : accounts) {
-            if (account.getLocalUser() != null && account.getLocalUser().getUUID()!=null ){
+            if (account.getLocalUser() != null && account.getLocalUser().getUUID() != null) {
                 //加载本地数量
-                account.setEmailNum(mmkv.decodeInt(account.getLocalUser().getId()+"inbox"));
+                account.setEmailNum(mmkv.decodeInt(account.getLocalUser().getId() + "inbox"));
                 ModelManager.getManager().getAccountModel().updateMegNum(account);
 
-                if(autuLogin)AutoLogin(account);
+                if (autuLogin) AutoLogin(account);
                 else {
-                    if (account.getLocalUser().isMainAccount())GetContacts(account.getLocalUser());
+                    if (account.getLocalUser().isMainAccount()) GetContacts(account.getLocalUser());
                     getMessageNums(account);
                 }
             }
@@ -523,7 +506,7 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                     return true;
                 }
 
-                System.out.println("登录失败信息："+response.getString("msg")+account.getLocalUser().getUUID());
+                System.out.println("登录失败信息：" + response.getString("msg") + account.getLocalUser().getUUID());
                 return false;
             }
 
@@ -590,64 +573,65 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
         }
         System.out.println("开始自动登录 uuid:" + uuid);
 
-        if(uuid!=null)WebSocketManager.getInstance().JavaWebSocketClient(Constants.WS_URL(uuid.toString()), new JWebSocketListener2() {
-            @Override
-            public void onOpen(ServerHandshake handshakedata, WebSocket webSocket) {
-                Log.d("JERRY", "onOpen");
-                ModelManager.getManager().getMainAccountModel().setUserOnline(true);
-                //发送订阅请求
-                //接受 {"command":"MESSAGE","send":"3","target":"1","content":"你好啊"}
-                //返回 {"commend":"SUCCESS","content":"","target":3}
+        if (uuid != null)
+            WebSocketManager.getInstance().JavaWebSocketClient(Constants.WS_URL(uuid.toString()), new JWebSocketListener2() {
+                @Override
+                public void onOpen(ServerHandshake handshakedata, WebSocket webSocket) {
+                    Log.d("JERRY", "onOpen");
+                    ModelManager.getManager().getMainAccountModel().setUserOnline(true);
+                    //发送订阅请求
+                    //接受 {"command":"MESSAGE","send":"3","target":"1","content":"你好啊"}
+                    //返回 {"commend":"SUCCESS","content":"","target":3}
 
-                //拼接订阅用户id
-            }
+                    //拼接订阅用户id
+                }
 
-            @Override
-            public void onMessage(String message) {
-                Log.d("JERRY", message);
-                JSONObject json = JSONObject.parseObject(message);
-                String commend = json.getString("commend");
-                String content = json.getString("content");
-                int target = json.getInteger("target");
-                dealMessage(commend, target, content);
-            }
+                @Override
+                public void onMessage(String message) {
+                    Log.d("JERRY", message);
+                    JSONObject json = JSONObject.parseObject(message);
+                    String commend = json.getString("commend");
+                    String content = json.getString("content");
+                    int target = json.getInteger("target");
+                    dealMessage(commend, target, content);
+                }
 
-            @Override
-            public void onClose(int code, String reason, boolean remote) {
-                Log.d("JERRY", "onClose");
-                ModelManager.getManager().getMainAccountModel().setUserOnline(false);
-                ModelManager.getManager().getContactModel().setOnline(false);
-            }
+                @Override
+                public void onClose(int code, String reason, boolean remote) {
+                    Log.d("JERRY", "onClose");
+                    ModelManager.getManager().getMainAccountModel().setUserOnline(false);
+                    ModelManager.getManager().getContactModel().setOnline(false);
+                }
 
-            @Override
-            public void onError(Exception ex) {
-                Log.d("JERRY", "onError");
-                ex.printStackTrace();
-            }
-        });
+                @Override
+                public void onError(Exception ex) {
+                    Log.d("JERRY", "onError");
+                    ex.printStackTrace();
+                }
+            });
     }
 
 
-    private void SubscribeUserStatus(List<Contact> contacts){
-        String str="";
-        for (Contact c: contacts) {
+    private void SubscribeUserStatus(List<Contact> contacts) {
+        String str = "";
+        for (Contact c : contacts) {
 
-            if(c.getLocalUser()!=null){
-                if(str.equals(""))str = c.getLocalUser().getId()+"";
-                else str=str+","+c.getLocalUser().getId();
+            if (c.getLocalUser() != null) {
+                if (str.equals("")) str = c.getLocalUser().getId() + "";
+                else str = str + "," + c.getLocalUser().getId();
             }
         }
 
-        System.out.println("订阅用户的id:  "+str);
+        System.out.println("订阅用户的id:  " + str);
 
         ServerRequest serverRequest = new ServerRequest(CommandType.SUBSCRIBE,
-                Objects.requireNonNull(ModelManager.getManager().getMainAccountModel().getUser().getValue()).getLocalUser().getId()+"",
+                Objects.requireNonNull(ModelManager.getManager().getMainAccountModel().getUser().getValue()).getLocalUser().getId() + "",
                 str,
                 "");
         WebSocketClient client = WebSocketManager.getInstance().getClient();
 
-        if(client != null){
-            if(client.isOpen()){
+        if (client != null) {
+            if (client.isOpen()) {
                 client.send(JSONObject.toJSONString(serverRequest));
             }
         }
@@ -656,7 +640,7 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
     }
 
     //获得邮箱邮件数量
-    private synchronized void getMessageNums(final Account account){
+    private synchronized void getMessageNums(final Account account) {
         Map<String, String> headers = new HashMap<>();
         headers.put("uuid", account.getLocalUser().getUUID());
 
@@ -669,9 +653,9 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
             public boolean onResponseAsync(JSONObject response) {
                 int code = response.getInteger("code");
                 if (code == 400) {
-                    int num =  response.getInteger("data");
+                    int num = response.getInteger("data");
                     account.setEmailNum(num);
-                    mmkv.encode(account.getLocalUser().getId()+"inbox",num);
+                    mmkv.encode(account.getLocalUser().getId() + "inbox", num);
                     return true;
                 }
                 return false;
@@ -688,15 +672,15 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
     private synchronized void dealMessage(String commend, final int target, final String content) {
         System.out.println("command:" + commend + " target:" + target + " content:" + content);
 
-        switch(commend){
+        switch (commend) {
             case CommandType.DISINVAD:
                 //uuid失效
                 List<LocalUser> allUser = userDao.getAllUser();
                 for (LocalUser u : allUser) {
-                    System.out.println("*-*-*-*-*-*-*:   u:"+u.getId()+","+u.getUUID()+"    ,uuid:"+content);
-                    if(u.getUUID()==null)continue;
+                    System.out.println("*-*-*-*-*-*-*:   u:" + u.getId() + "," + u.getUUID() + "    ,uuid:" + content);
+                    if (u.getUUID() == null) continue;
                     if (u.getUUID().equals(content)) {
-                        System.out.println(u.getNickname()+"  , ID:  "+u.getId() + ",uuid失效");
+                        System.out.println(u.getNickname() + "  , ID:  " + u.getId() + ",uuid失效");
                         u.setUUID(null);
                         userDao.updateUsers(u);
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -713,22 +697,21 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(HomeActivity.this,"目标："+target+",内容："+content,Toast.LENGTH_SHORT).show();
+                        Toast.makeText(HomeActivity.this, "目标：" + target + ",内容：" + content, Toast.LENGTH_SHORT).show();
                     }
                 });
                 break;
             case CommandType.CONNECT:
 //                用户上线
-                ModelManager.getManager().getContactModel().setOnline(target,true);
+                ModelManager.getManager().getContactModel().setOnline(target, true);
                 break;
             case CommandType.DISCONNECT:
 //                用户下线
-                ModelManager.getManager().getContactModel().setOnline(target,false);
+                ModelManager.getManager().getContactModel().setOnline(target, false);
                 break;
             case CommandType.VIBRATION:
-                VibrationUtils.Vibrator(this,new long[]{100,200,100,200},-1);
+                VibrationUtils.Vibrator(this, new long[]{100, 200, 100, 200}, -1);
                 break;
-
 
 
         }
