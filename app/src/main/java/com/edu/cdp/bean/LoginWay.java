@@ -1,7 +1,5 @@
 package com.edu.cdp.bean;
 
-import android.graphics.Color;
-
 public class LoginWay {
     private int img;
     private String name;

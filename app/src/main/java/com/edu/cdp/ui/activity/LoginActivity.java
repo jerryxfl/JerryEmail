@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,7 +20,6 @@ import com.edu.cdp.R;
 import com.edu.cdp.application.JApplication;
 import com.edu.cdp.base.BaseActivity;
 import com.edu.cdp.base.BaseDialog;
-import com.edu.cdp.bean.Account;
 import com.edu.cdp.bean.Constants;
 import com.edu.cdp.database.bean.LocalUser;
 import com.edu.cdp.database.dao.UserDao;
@@ -36,9 +33,7 @@ import com.edu.cdp.utils.SoftKeyBoardListener;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
     private LoadingDialog loadingDialog;

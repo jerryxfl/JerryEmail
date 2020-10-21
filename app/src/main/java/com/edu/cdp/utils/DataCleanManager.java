@@ -1,8 +1,9 @@
 package com.edu.cdp.utils;
 
-import java.io.File;
 import android.content.Context;
 import android.os.Environment;
+
+import java.io.File;
 
 /** * 本应用数据清除管理器 */
 public class DataCleanManager {

@@ -1,7 +1,6 @@
 package com.edu.cdp.base;
 
 import android.content.Context;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;

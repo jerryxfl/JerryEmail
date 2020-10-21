@@ -4,7 +4,6 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.edu.cdp.bean.Account;
-import com.edu.cdp.database.bean.LocalUser;
 
 public class MainAccountModel extends ViewModel {
     private MutableLiveData<Account> user;

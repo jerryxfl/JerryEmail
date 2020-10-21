@@ -4,10 +4,8 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.alibaba.fastjson.JSONObject;
-import com.edu.cdp.net.websocket.JWebSocketListener;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,15 +17,11 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.WebSocket;
-import okhttp3.WebSocketListener;
-import okio.ByteString;
 
 public class OkHttpUtils {
     private static MediaType JSON = MediaType.parse("application/json; charset=utf-8");

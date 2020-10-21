@@ -1,24 +1,9 @@
 package com.edu.cdp.utils;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.AppComponentFactory;
-import android.content.DialogInterface;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.edu.cdp.base.BaseDialog;
-import com.edu.cdp.ui.dialog.ConfirmDialog;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Timer;
 
 public class InitApp {
     private static InitApp instance;

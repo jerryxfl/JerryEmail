@@ -1,10 +1,8 @@
 package com.edu.cdp.model;
 
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.edu.cdp.R;
 import com.edu.cdp.bean.Contact;
 
 import java.io.Serializable;

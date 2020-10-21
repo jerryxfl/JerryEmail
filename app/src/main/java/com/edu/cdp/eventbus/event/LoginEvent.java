@@ -1,9 +1,5 @@
 package com.edu.cdp.eventbus.event;
 
-import com.edu.cdp.bean.Account;
-
-import java.util.List;
-
 public class LoginEvent {
     private String tag;
 

@@ -2,22 +2,18 @@ package com.edu.cdp.ui.fragment;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-
-import androidx.databinding.ViewDataBinding;
-import androidx.fragment.app.Fragment;
-
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.LinearLayout;
 
+import androidx.fragment.app.Fragment;
+
 import com.edu.cdp.R;
 import com.edu.cdp.base.BaseFragment;
 import com.edu.cdp.databinding.FragmentWebViewBinding;
-import com.edu.cdp.databinding.FragmentWebViewBindingImpl;
 import com.just.agentweb.AgentWeb;
 import com.just.agentweb.AgentWebConfig;
 import com.just.agentweb.DefaultWebClient;

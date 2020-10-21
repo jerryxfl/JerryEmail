@@ -11,17 +11,14 @@ import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.media.MediaPlayer;
 import android.media.audiofx.Visualizer;
-import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.Lifecycle;
@@ -29,7 +26,6 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.OnLifecycleEvent;
 
-import com.edu.cdp.R;
 import com.edu.cdp.base.BaseActivity;
 import com.edu.cdp.net.okhttp.OkHttpUtils;
 

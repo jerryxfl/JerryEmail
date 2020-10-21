@@ -1,23 +1,17 @@
 package com.edu.cdp.ui.activity;
 
 
-import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Handler;
 import android.os.Message;
-import android.text.Html;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AnimationSet;
-import android.view.animation.TranslateAnimation;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -33,7 +27,6 @@ import com.edu.cdp.ui.fragment.WebViewFragment;
 import com.edu.cdp.utils.AndroidUtils;
 import com.edu.cdp.utils.GsonUtil;
 
-import java.io.IOException;
 import java.util.Random;
 
 public class EmailActivity extends BaseActivity<ActivityEmailBinding> {

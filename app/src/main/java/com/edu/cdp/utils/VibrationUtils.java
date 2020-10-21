@@ -2,7 +2,6 @@ package com.edu.cdp.utils;
 
 import android.app.Activity;
 import android.app.Service;
-import android.content.Context;
 import android.os.Vibrator;
 
 public class VibrationUtils {

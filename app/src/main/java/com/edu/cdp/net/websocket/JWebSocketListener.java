@@ -5,7 +5,6 @@ import org.jetbrains.annotations.Nullable;
 
 import okhttp3.Response;
 import okhttp3.WebSocket;
-import okhttp3.WebSocketListener;
 import okio.ByteString;
 
 public interface JWebSocketListener {

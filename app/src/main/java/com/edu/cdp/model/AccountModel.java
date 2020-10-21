@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel;
 
 import com.edu.cdp.bean.Account;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AccountModel extends ViewModel {

@@ -1,15 +1,10 @@
 package com.edu.cdp.ui.activity;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.databinding.ViewDataBinding;
-
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.ActivityOptions;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
@@ -17,10 +12,11 @@ import android.transition.Fade;
 import android.view.animation.AnticipateInterpolator;
 import android.view.animation.BounceInterpolator;
 
+import androidx.annotation.NonNull;
+
 import com.edu.cdp.R;
 import com.edu.cdp.base.BaseActivity;
 import com.edu.cdp.databinding.ActivityGuideBinding;
-import com.edu.cdp.utils.InitApp;
 
 @SuppressWarnings("all")
 public class GuideActivity extends BaseActivity<ActivityGuideBinding> {
