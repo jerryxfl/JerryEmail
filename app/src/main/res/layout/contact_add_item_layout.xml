@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="5dp"
+    android:id="@+id/container"
+    android:orientation="horizontal">
+    <com.edu.cdp.custom.CircleOnlineAvatar
+        android:id="@+id/avatar"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        app:showOnlineState="false"
+        app:c_avatar="@drawable/add"/>
+    <EditText
+        android:id="@+id/username_edt"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="7sp"
+        android:singleLine="true"
+        android:textCursorDrawable="@drawable/textcursor_shape" />
+    <TextView
+        android:id="@+id/search"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="搜索"
+        android:layout_gravity="center"
+        android:textStyle="bold"
+        android:textColor="#3498db"
+        android:textSize="12sp"/>
+</LinearLayout>

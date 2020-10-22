@@ -52,52 +52,32 @@ public class OkHttpUtils {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 e.printStackTrace();
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        jcallback.onFailure();
-                    }
-                });
+                new Handler(Looper.getMainLooper()).post(() -> jcallback.onFailure());
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) {
                 String result = null;
-                try {
-                    result = Objects.requireNonNull(response.body()).string();
+
+                if(response.isSuccessful()){
                     try {
-                        if (jcallback.onResponseAsync(JSONObject.parseObject(result))) {
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    jcallback.onSuccess();
-                                }
-                            });
-                        }else {
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    jcallback.onFailure();
-                                }
-                            });
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                jcallback.onFailure();
+                        result = Objects.requireNonNull(response.body()).string();
+                        try {
+                            if (jcallback.onResponseAsync(JSONObject.parseObject(result))) {
+                                new Handler(Looper.getMainLooper()).post(() -> jcallback.onSuccess());
+                            }else {
+                                new Handler(Looper.getMainLooper()).post(() -> jcallback.onFailure());
                             }
-                        });
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            jcallback.onFailure();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            new Handler(Looper.getMainLooper()).post(() -> jcallback.onFailure());
                         }
-                    });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        new Handler(Looper.getMainLooper()).post(() -> jcallback.onFailure());
+                    }
+                }else{
+                    new Handler(Looper.getMainLooper()).post(() -> jcallback.onFailure());
                 }
             }
         });
@@ -116,7 +96,7 @@ public class OkHttpUtils {
                 .get();
 
         //添加请求头
-        for (String key : headers.keySet()) {
+        if(headers!=null)for (String key : headers.keySet()) {
             builder.addHeader(key, Objects.requireNonNull(headers.get(key)));
         }
         Request request = builder.build();
@@ -126,52 +106,31 @@ public class OkHttpUtils {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 e.printStackTrace();
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        jcallback.onFailure();
-                    }
-                });
+                new Handler(Looper.getMainLooper()).post(() -> jcallback.onFailure());
             }
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) {
                 String result = null;
-                try {
-                    result = Objects.requireNonNull(response.body()).string();
+                if(response.isSuccessful()){
                     try {
-                        if (jcallback.onResponseAsync(JSONObject.parseObject(result))) {
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    jcallback.onSuccess();
-                                }
-                            });
-                        }else {
-                            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    jcallback.onFailure();
-                                }
-                            });
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                jcallback.onFailure();
+                        result = Objects.requireNonNull(response.body()).string();
+                        try {
+                            if (jcallback.onResponseAsync(JSONObject.parseObject(result))) {
+                                new Handler(Looper.getMainLooper()).post(() -> jcallback.onSuccess());
+                            }else {
+                                new Handler(Looper.getMainLooper()).post(() -> jcallback.onFailure());
                             }
-                        });
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            jcallback.onFailure();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            new Handler(Looper.getMainLooper()).post(() -> jcallback.onFailure());
                         }
-                    });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        new Handler(Looper.getMainLooper()).post(() -> jcallback.onFailure());
+                    }
+                }else{
+                    new Handler(Looper.getMainLooper()).post(() -> jcallback.onFailure());
                 }
             }
         });
@@ -206,77 +165,64 @@ public class OkHttpUtils {
 
             @Override
             public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        jdownloadCallback.onPrepare();
+                new Handler(Looper.getMainLooper()).post(() -> jdownloadCallback.onPrepare());
+
+                if(!response.isSuccessful()){
+                    new Handler(Looper.getMainLooper()).post(() -> jdownloadCallback.onFailure("链接失败"));
+                }else{
+                    InputStream is = null;
+                    byte[] buf = new byte[2048];
+                    int len = 0;
+                    FileOutputStream fos = null;
+
+                    //获得文件真实保存目录
+                    File downloadFile = new File(saveDir);
+                    if(!downloadFile.mkdir()){
+                        downloadFile.createNewFile();
                     }
-                });
-                InputStream is = null;
-                byte[] buf = new byte[2048];
-                int len = 0;
-                FileOutputStream fos = null;
+                    final String saveDir = downloadFile.getAbsolutePath();
+                    //获得文件真实保存目录 end
 
-                //获得文件真实保存目录
-                File downloadFile = new File(saveDir);
-                if(!downloadFile.mkdir()){
-                    downloadFile.createNewFile();
-                }
-                final String saveDir = downloadFile.getAbsolutePath();
-                //获得文件真实保存目录 end
+                    //开始下载文件
+                    try {
+                        is = response.body().byteStream();//获得输入流
+                        final long max = response.body().contentLength();
+                        final String fileName =  url.substring(url.lastIndexOf("/")+1);
+                        new Handler(Looper.getMainLooper()).post(() -> jdownloadCallback.onDownloadStart(max,0,fileName,saveDir));
 
-                //开始下载文件
-                try {
-                    is = response.body().byteStream();//获得输入流
-                    final long max = response.body().contentLength();
-                    final String fileName =  url.substring(url.lastIndexOf("/")+1);
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            jdownloadCallback.onDownloadStart(max,0,fileName,saveDir);
+                        //获得文件写入对象
+                        File file = new File(saveDir,fileName);
+                        fos = new FileOutputStream(file);
+                        long sum = 0;
+                        while((len = is.read(buf))!=-1){
+                            fos.write(buf,0,len);
+                            sum += len;
+                            final long finalSum = sum;
+                            new Handler(Looper.getMainLooper()).post(() -> jdownloadCallback.onDownloadUpdate(max, finalSum));
                         }
-                    });
-
-                    //获得文件写入对象
-                    File file = new File(saveDir,fileName);
-                    fos = new FileOutputStream(file);
-                    long sum = 0;
-                    while((len = is.read(buf))!=-1){
-                        fos.write(buf,0,len);
-                        sum += len;
-                        final long finalSum = sum;
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                jdownloadCallback.onDownloadUpdate(max, finalSum);
-                            }
-                        });
-                    }
-                    fos.flush();
-                    final long finalSum1 = sum;
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
+                        fos.flush();
+                        final long finalSum1 = sum;
+                        new Handler(Looper.getMainLooper()).post(() -> {
                             jdownloadCallback.onDownloadEnd(max, finalSum1);
 
                             jdownloadCallback.onSuccess();
-                        }
-                    });
-                }catch (Exception e){
-                    e.printStackTrace();
-                    new Handler(Looper.getMainLooper()).post(() -> jdownloadCallback.onFailure("下载文件出错"));
-                }finally{
-                    try{
-                        if(is!=null)
-                            is.close();
-                        if(fos!=null){
-                            fos.close();
-                        }
-                    }catch (IOException e){
+                        });
+                    }catch (Exception e){
                         e.printStackTrace();
+                        new Handler(Looper.getMainLooper()).post(() -> jdownloadCallback.onFailure("下载文件出错"));
+                    }finally{
+                        try{
+                            if(is!=null)
+                                is.close();
+                            if(fos!=null){
+                                fos.close();
+                            }
+                        }catch (IOException e){
+                            e.printStackTrace();
+                        }
                     }
+                    //下载文件 end
                 }
-                //下载文件 end
             }
         });
     }

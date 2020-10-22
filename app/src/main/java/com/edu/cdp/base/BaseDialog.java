@@ -34,11 +34,13 @@ public abstract class BaseDialog extends Dialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //设置布局
         setContentView(setCustomContentView());
         //按空白处不能取消动画
         setCanceledOnTouchOutside(setCanceledOnTouchOutside());
         setCancelable(setCancelable());
         window = getWindow();
+        //设置window
         initWindow(window);
         //初始化界面控件
         initView();

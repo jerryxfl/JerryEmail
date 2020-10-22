@@ -38,8 +38,8 @@ public  class AdapterList<T> extends ArrayList<T> {
 
     @Override
     public void add(int index, T element) {
-        adapter.notifyItemChanged(index);
         super.add(index, element);
+        adapter.notifyItemChanged(index);
     }
 
     @Override
@@ -56,8 +56,8 @@ public  class AdapterList<T> extends ArrayList<T> {
 
     @Override
     public void clear() {
-        adapter.notifyDataSetChanged();
         super.clear();
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -74,8 +74,8 @@ public  class AdapterList<T> extends ArrayList<T> {
 
     @Override
     protected void removeRange(int fromIndex, int toIndex) {
-        adapter.notifyItemRangeRemoved(fromIndex,toIndex);
         super.removeRange(fromIndex, toIndex);
+        adapter.notifyItemRangeRemoved(fromIndex,toIndex);
     }
 
     @Override
@@ -100,14 +100,14 @@ public  class AdapterList<T> extends ArrayList<T> {
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void replaceAll(@NonNull UnaryOperator<T> operator) {
-        adapter.notifyDataSetChanged();
         super.replaceAll(operator);
+        adapter.notifyDataSetChanged();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void sort(@Nullable Comparator<? super T> c) {
-        adapter.notifyDataSetChanged();
         super.sort(c);
+        adapter.notifyDataSetChanged();
     }
 }

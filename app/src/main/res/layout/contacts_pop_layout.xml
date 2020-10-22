@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:background="@drawable/top_l_r_bottom_l_r_round_shape">
+        <com.edu.cdp.custom.LoadingView
+            android:id="@+id/loading"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerInParent="true"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:visibility="gone"
+            android:id="@+id/contactRecycler"
+            android:layout_width="100dp"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"/>
+    </RelativeLayout>
+    <com.edu.cdp.custom.TriangleView
+        android:layout_width="10dp"
+        android:layout_height="5dp"
+        app:color="#2f3542"
+        android:rotation="180"
+        android:layout_marginStart="15dp"/>
+</LinearLayout>

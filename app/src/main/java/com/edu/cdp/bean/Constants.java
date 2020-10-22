@@ -26,6 +26,7 @@ public class Constants {
     public static final String DRAFTBOX_MESSAGE_COUNT = BASE_URL+"api/draftbox_message_count";
     public static final String STARBOX_MESSAGE_COUNT = BASE_URL+"api/starbox_message_count";
     public static final String GROUPBOX_MESSAGE_COUNT = BASE_URL+"api/groupbox_message_count";
+    public static final String GETCONTACTINFODIM = BASE_URL+"common/get_contact_info_dim?username=";
 
 
 
