@@ -105,7 +105,7 @@ public class EmailManagerActivity extends BaseActivity<ActivityEmailManagerBindi
                             intent1.putExtra("type",position+1);
                             intent1.putExtra("num",emailBox.getMsg_num());
                             startActivity(intent1);
-                            overridePendingTransition(R.anim.slide_in_from_left,R.anim.slide_out_to_right);
+                            overridePendingTransition(R.anim.slide_in_from_right,R.anim.slide_out_to_left);
 
                             if(emailBox.getItemClickListener()!=null)emailBox.getItemClickListener().onItemClick();
                         });
@@ -175,12 +175,9 @@ public class EmailManagerActivity extends BaseActivity<ActivityEmailManagerBindi
                 if (code == 400) {
                     final int num = response.getInteger("data");
                     mmkv.encode(account.getLocalUser().getId()+"outbox",num);
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            emailBoxes.get(1).setMsg_num(num);
-                            emailBoxJAdapter.adapter.notifyItemChanged(1, "change");
-                        }
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        emailBoxes.get(1).setMsg_num(num);
+                        emailBoxJAdapter.adapter.notifyItemChanged(1, "change");
                     });
                     return true;
                 }
@@ -211,12 +208,9 @@ public class EmailManagerActivity extends BaseActivity<ActivityEmailManagerBindi
                 if (code == 400) {
                     final int num = response.getInteger("data");
                     mmkv.encode(account.getLocalUser().getId()+"starbox",num);
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            emailBoxes.get(2).setMsg_num(num);
-                            emailBoxJAdapter.adapter.notifyItemChanged(2, "change");
-                        }
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        emailBoxes.get(2).setMsg_num(num);
+                        emailBoxJAdapter.adapter.notifyItemChanged(2, "change");
                     });
                     return true;
                 }
@@ -246,12 +240,9 @@ public class EmailManagerActivity extends BaseActivity<ActivityEmailManagerBindi
                 if (code == 400) {
                     final int num = response.getInteger("data");
                     mmkv.encode(account.getLocalUser().getId()+"groupbox",num);
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            emailBoxes.get(3).setMsg_num(num);
-                            emailBoxJAdapter.adapter.notifyItemChanged(3, "change");
-                        }
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        emailBoxes.get(3).setMsg_num(num);
+                        emailBoxJAdapter.adapter.notifyItemChanged(3, "change");
                     });
                     return true;
                 }
@@ -282,12 +273,9 @@ public class EmailManagerActivity extends BaseActivity<ActivityEmailManagerBindi
                 if (code == 400) {
                     final int num = response.getInteger("data");
                     mmkv.encode(account.getLocalUser().getId()+"draftbox",num);
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            emailBoxes.get(4).setMsg_num(num);
-                            emailBoxJAdapter.adapter.notifyItemChanged(4, "change");
-                        }
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        emailBoxes.get(4).setMsg_num(num);
+                        emailBoxJAdapter.adapter.notifyItemChanged(4, "change");
                     });
                     return true;
                 }

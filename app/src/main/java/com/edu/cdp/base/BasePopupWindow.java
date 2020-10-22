@@ -1,5 +1,6 @@
 package com.edu.cdp.base;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -23,6 +24,7 @@ public abstract class BasePopupWindow {
         initPopupWindow();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void initPopupWindow() {
         View v = setContentView();
         initView(v);
@@ -31,21 +33,13 @@ public abstract class BasePopupWindow {
         popupWindow.getContentView().setFocusable(true);
         popupWindow.setFocusable(true);
         popupWindow.setTouchable(true);
-        popupWindow.setTouchInterceptor(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                return false;
+        popupWindow.setTouchInterceptor((view, motionEvent) -> false);
+        popupWindow.getContentView().setOnKeyListener((v1, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
+                popupWindow.dismiss();
+                return true;
             }
-        });
-        popupWindow.getContentView().setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_BACK) {
-                    popupWindow.dismiss();
-                    return true;
-                }
-                return false;
-            }
+            return false;
         });
 
         popupWindow.setOutsideTouchable(setCanceledOnTouchOutside());
@@ -54,12 +48,7 @@ public abstract class BasePopupWindow {
     public void setPopupWindowListener(final popupWindowListener popupWindowListener) {
         this.popupWindowListener = popupWindowListener;
         if(popupWindow!=null){
-            popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
-                @Override
-                public void onDismiss() {
-                    popupWindowListener.onDismiss();
-                }
-            });
+            popupWindow.setOnDismissListener(popupWindowListener::onDismiss);
         }else {
             throw new NullPointerException("PopUpWindow还未创建");
         }

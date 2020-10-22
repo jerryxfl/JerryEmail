@@ -80,12 +80,9 @@ public class ManagerAccountActivity extends BaseActivity<ActivityManagerAccountB
                 Account account = data.get(position);
                 if(account.getLocalUser()==null){
                     RelativeLayout container = holder.findViewById(R.id.container);
-                    container.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Toast.makeText(ManagerAccountActivity.this,"添加新用户",Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(ManagerAccountActivity.this, LoginWayActivity.class));
-                        }
+                    container.setOnClickListener(view -> {
+                        Toast.makeText(ManagerAccountActivity.this,"添加新用户",Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(ManagerAccountActivity.this, LoginWayActivity.class));
                     });
 
                 }else{
@@ -121,12 +118,9 @@ public class ManagerAccountActivity extends BaseActivity<ActivityManagerAccountB
             }
         });
 
-        ModelManager.getManager().getAccountModel().getAccounts().observe(this, new Observer<List<Account>>() {
-            @Override
-            public void onChanged(List<Account> accounts) {
-                System.out.println("manager 账户变化");
-                accountJAdapter.adapter.setData(accounts);
-            }
+        ModelManager.getManager().getAccountModel().getAccounts().observe(this, accounts -> {
+            System.out.println("manager 账户变化");
+            accountJAdapter.adapter.setData(accounts);
         });
     }
 
@@ -146,12 +140,7 @@ public class ManagerAccountActivity extends BaseActivity<ActivityManagerAccountB
                 RelativeLayout container = holder.findViewById(R.id.container);
                 TextView name = holder.findViewById(R.id.name);
                 name.setText(setting.getName());
-                container.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        setting.getClick().click();
-                    }
-                });
+                container.setOnClickListener(view -> setting.getClick().click());
             }
 
             @Override

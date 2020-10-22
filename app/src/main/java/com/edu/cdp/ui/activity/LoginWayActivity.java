@@ -34,12 +34,9 @@ public class LoginWayActivity extends BaseActivity<ActivityLoginwayBinding> {
     @Override
     protected void setData(ActivityLoginwayBinding binding) {
         loginWays = new ArrayList<>();
-        loginWays.add(new LoginWay(R.drawable.email, getString(R.string.app_name), Color.WHITE, Color.BLACK, new LoginWay.ILoginWay() {
-            @Override
-            public void click() {
-                startActivity(new Intent(LoginWayActivity.this,LoginActivity.class));
-                finish();
-            }
+        loginWays.add(new LoginWay(R.drawable.email, getString(R.string.app_name), Color.WHITE, Color.BLACK, () -> {
+            startActivity(new Intent(LoginWayActivity.this,LoginActivity.class));
+            finish();
         }));
         loginWays.add(new LoginWay(R.drawable.facebook, "Facebook", Color.BLUE, Color.WHITE, new LoginWay.ILoginWay() {
             @Override
@@ -69,12 +66,7 @@ public class LoginWayActivity extends BaseActivity<ActivityLoginwayBinding> {
                 img.setImageBitmap(BitmapFactory.decodeResource(getResources(),loginWay.getImg()));
                 name.setTextColor(loginWay.getForegroundColor());
                 name.setText("Login with "+loginWay.getName());
-                container.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        loginWay.getiLoginWay().click();
-                    }
-                });
+                container.setOnClickListener(view -> loginWay.getiLoginWay().click());
             }
 
             @Override

@@ -48,11 +48,8 @@ public class PermissionDialog extends BaseDialog {
 
     @Override
     protected void initEvent() {
-        confirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(listener!=null)listener.onConfirm();
-            }
+        confirm.setOnClickListener(v -> {
+            if(listener!=null)listener.onConfirm();
         });
     }
 

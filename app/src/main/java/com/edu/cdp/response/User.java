@@ -9,6 +9,17 @@ public class User {
     private String nickname;
     private String avatar;
 
+    public User() {
+    }
+
+    public User(int id, String username, String password, String nickname, String avatar) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.nickname = nickname;
+        this.avatar = avatar;
+    }
+
     public int getId() {
         return id;
     }

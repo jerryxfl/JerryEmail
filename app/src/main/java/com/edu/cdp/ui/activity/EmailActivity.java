@@ -121,19 +121,10 @@ public class EmailActivity extends BaseActivity<ActivityEmailBinding> {
 
     @Override
     protected void setListeners(final ActivityEmailBinding binding) {
-        binding.back.setOnClickListener(new View.OnClickListener() {
+        binding.back.setOnClickListener(view -> LaunchAnimation());
+        binding.username.setOnClickListener(view -> {
+            //打开用户信息界面
 
-            @Override
-            public void onClick(View view) {
-                LaunchAnimation();
-            }
-        });
-        binding.username.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //打开用户信息界面
-
-            }
         });
 //        binding.voiceview.setOnClickListener(new View.OnClickListener() {
 //            @Override

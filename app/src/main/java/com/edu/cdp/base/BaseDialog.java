@@ -44,17 +44,11 @@ public abstract class BaseDialog extends Dialog {
         initView();
         //初始化界面控件的事件
         initEvent();
-        setOnShowListener(new OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialogInterface) {
-                if(listener!=null)listener.showListener(dialogInterface);
-            }
+        setOnShowListener(dialogInterface -> {
+            if(listener!=null)listener.showListener(dialogInterface);
         });
-        setOnDismissListener(new OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                if(listener!=null)listener.dismissListener(dialogInterface);
-            }
+        setOnDismissListener(dialogInterface -> {
+            if(listener!=null)listener.dismissListener(dialogInterface);
         });
     }
 

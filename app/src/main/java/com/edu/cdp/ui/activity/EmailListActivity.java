@@ -126,7 +126,7 @@ public class EmailListActivity extends BaseActivity<ActivityEmailListBinding> {
                                     });
 
                             title.setText(email.getTitle());
-                            time.setText(timeUtile(new Date(email.getTime())));
+                            time.setText(CalculateTimeDifference(email.getTime()+""));
                             msgNumber.setText("1");
 
                             JSONObject json = JSONObject.parseObject(email.getContent());
@@ -149,21 +149,18 @@ public class EmailListActivity extends BaseActivity<ActivityEmailListBinding> {
                                         }
                                     });
                             title.setText(email.getTitle());
-                            time.setText(timeUtile(new Date(email.getTime())));
+                            time.setText(CalculateTimeDifference(email.getTime()+""));
                             JSONObject json = JSONObject.parseObject(email.getContent());
                             String text = !json.containsKey("text")||json.getString("text").equals("")?"进入查看":json.getString("text");
                             content.setText(text);
                         }
                         LinearLayout container = holder.findViewById(R.id.container);
-                        container.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                Intent intent = new Intent(EmailListActivity.this,EmailActivity.class);
-                                Bundle args = new Bundle();
-                                args.putSerializable("email",email);
-                                intent.putExtras(args);
-                                startActivity(intent);
-                            }
+                        container.setOnClickListener(view -> {
+                            Intent intent = new Intent(EmailListActivity.this,EmailActivity.class);
+                            Bundle args = new Bundle();
+                            args.putSerializable("email",email);
+                            intent.putExtras(args);
+                            startActivity(intent);
                         });
 
                     }
@@ -210,12 +207,7 @@ public class EmailListActivity extends BaseActivity<ActivityEmailListBinding> {
 
     @Override
     protected void setListeners(ActivityEmailListBinding binding) {
-        binding.back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+        binding.back.setOnClickListener(view -> finish());
     }
 
 
@@ -280,12 +272,9 @@ public class EmailListActivity extends BaseActivity<ActivityEmailListBinding> {
                                 tag
                         );
                         emailDao.insertOneEmail(email);
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                emailList.add(email);
-                                emailJAdapter.adapter.notifyDataSetChanged();
-                            }
+                        new Handler(Looper.getMainLooper()).post(() -> {
+                            emailList.add(email);
+                            emailJAdapter.adapter.notifyDataSetChanged();
                         });
                     }
                     return true;
@@ -308,52 +297,46 @@ public class EmailListActivity extends BaseActivity<ActivityEmailListBinding> {
     }
 
 
-    private String timeUtile(Date inTime) {
-        // 拿到当前时间戳和发布时的时间戳，然后得出时间戳差
-        Date curTime = new Date();
-        long timeDiff = curTime.getTime() - inTime.getTime();
-        //上面一行代码可以换成以下（兼容性的解决）
+    private String CalculateTimeDifference(String timeStr) {
+        StringBuffer sb = new StringBuffer();
+        long t = Long.parseLong(timeStr);
+        long time = System.currentTimeMillis() - (t * 1000);
+        long mill = (long) Math.ceil(time / 1000);//秒前
 
-        // 单位换算
-        long min = 60 * 1000;
-        long hour = min * 60;
-        long day = hour * 24;
-        long week = day * 7;
-        long month = week * 4;
-        long year = month * 12;
-        DecimalFormat df = new DecimalFormat("#");
-        // 计算发布时间距离当前时间的周、天、时、分
-        double exceedyear = Math.floor(timeDiff / year);
-        double exceedmonth = Math.floor(timeDiff / month);
-        double exceedWeek = Math.floor(timeDiff / week);
-        double exceedDay = Math.floor(timeDiff / day);
-        double exceedHour = Math.floor(timeDiff / hour);
-        double exceedMin = Math.floor(timeDiff / min);
+        long minute = (long) Math.ceil(time / 60 / 1000.0f);// 分钟前
 
+        long hour = (long) Math.ceil(time / 60 / 60 / 1000.0f);// 小时
 
-        // 最后判断时间差到底是属于哪个区间，然后return
+        long day = (long) Math.ceil(time / 24 / 60 / 60 / 1000.0f);// 天前
 
-        if (exceedyear < 100 && exceedyear > 0) {
-            return df.format(exceedyear) + "年前";
-        } else {
-            if (exceedmonth < 12 && exceedmonth > 0) {
-                return df.format(exceedmonth) + "月前";
+        if (day - 1 > 0) {
+            sb.append(day + "天");
+        } else if (hour - 1 > 0) {
+            if (hour >= 24) {
+                sb.append("1天");
             } else {
-                if (exceedWeek < 4 && exceedWeek > 0) {
-                    return df.format(exceedWeek) + "星期前";
-                } else {
-                    if (exceedDay < 7 && exceedDay > 0) {
-                        return df.format(exceedDay) + "天前";
-                    } else {
-                        if (exceedHour < 24 && exceedHour > 0) {
-                            return df.format(exceedHour) + "小时前";
-                        } else {
-                            return df.format(exceedMin) + "分钟前";
-                        }
-                    }
-                }
+                sb.append(hour + "小时");
             }
+        } else if (minute - 1 > 0) {
+            if (minute == 60) {
+                sb.append("1小时");
+            } else {
+                sb.append(minute + "分钟");
+            }
+        } else if (mill - 1 > 0) {
+            if (mill == 60) {
+                sb.append("1分钟");
+            } else {
+                sb.append(mill + "秒");
+            }
+        } else {
+            sb.append("刚刚");
         }
+        if (!sb.toString().equals("刚刚")) {
+            sb.append("前");
+        }
+        return sb.toString();
     }
+
 
 }

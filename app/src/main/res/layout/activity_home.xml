@@ -34,6 +34,7 @@
                 android:textStyle="bold" />
 
             <ImageView
+                android:id="@+id/menu"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_alignParentEnd="true"

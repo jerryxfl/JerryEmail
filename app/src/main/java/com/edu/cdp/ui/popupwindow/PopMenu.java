@@ -77,14 +77,11 @@ public class PopMenu extends BasePopupWindow {
 
                         icon.setImageBitmap(BitmapFactory.decodeResource(mContext.getResources(), menuItem.getIcon()));
                         name.setText(menuItem.getName());
-                        container.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                if (menuItem.getMenuOnClickListener() != null)
-                                    menuItem.getMenuOnClickListener().onClick();
+                        container.setOnClickListener(view1 -> {
+                            if (menuItem.getMenuOnClickListener() != null)
+                                menuItem.getMenuOnClickListener().onClick();
 
-                                dismissPopUpWindow();
-                            }
+                            dismissPopUpWindow();
                         });
 
                     }
@@ -105,29 +102,26 @@ public class PopMenu extends BasePopupWindow {
         menuItems.add(new MenuItem(
                 R.drawable.vibration,
                 "摇一摇",
-                new MenuItem.MenuOnClickListener() {
-                    @Override
-                    public void onClick() {
-                        AvatarView avatarView = (AvatarView) anchorView;
-                        if(avatarView.isOnLine()){
-                            WebSocketClient client = WebSocketManager.getInstance().getClient();
-                            if(client!=null){
-                                if(client.isOpen()){
-                                    //发送震动命令
-                                    ServerRequest serverRequest = new ServerRequest(CommandType.VIBRATION,
-                                            account.getLocalUser().getId()+"",
-                                            contact.getLocalUser().getId()+"",
-                                            "");
-                                    client.send(JSONObject.toJSONString(serverRequest));
+                () -> {
+                    AvatarView avatarView = (AvatarView) anchorView;
+                    if(avatarView.isOnLine()){
+                        WebSocketClient client = WebSocketManager.getInstance().getClient();
+                        if(client!=null){
+                            if(client.isOpen()){
+                                //发送震动命令
+                                ServerRequest serverRequest = new ServerRequest(CommandType.VIBRATION,
+                                        account.getLocalUser().getId()+"",
+                                        contact.getLocalUser().getId()+"",
+                                        "");
+                                client.send(JSONObject.toJSONString(serverRequest));
 
-                                    ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(
-                                            anchorView,
-                                            "translationX",
-                                            0f,dip2px(mContext,10),-dip2px(mContext,10),dip2px(mContext,10),-dip2px(mContext,10),0f);
-                                    objectAnimator.setDuration(300);
-                                    objectAnimator.setInterpolator(new DecelerateInterpolator());
-                                    objectAnimator.start();
-                                }
+                                ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(
+                                        anchorView,
+                                        "translationX",
+                                        0f,dip2px(mContext,10),-dip2px(mContext,10),dip2px(mContext,10),-dip2px(mContext,10),0f);
+                                objectAnimator.setDuration(300);
+                                objectAnimator.setInterpolator(new DecelerateInterpolator());
+                                objectAnimator.start();
                             }
                         }
                     }
@@ -137,11 +131,8 @@ public class PopMenu extends BasePopupWindow {
         menuItems.add(new MenuItem(
                 R.drawable.delete,
                 "删除",
-                new MenuItem.MenuOnClickListener() {
-                    @Override
-                    public void onClick() {
+                () -> {
 
-                    }
                 }
         ));
 

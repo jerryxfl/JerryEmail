@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -19,7 +18,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -53,7 +51,9 @@ import com.edu.cdp.net.websocket.WebSocketManager;
 import com.edu.cdp.net.websocket.bean.ServerRequest;
 import com.edu.cdp.request.Login;
 import com.edu.cdp.response.User;
+import com.edu.cdp.ui.dialog.WEmailDialog;
 import com.edu.cdp.ui.popupwindow.PopMenu;
+import com.edu.cdp.ui.popupwindow.EmailPopMenu;
 import com.edu.cdp.utils.AndroidUtils;
 import com.edu.cdp.utils.GsonUtil;
 import com.edu.cdp.utils.VibrationUtils;
@@ -94,7 +94,6 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
 
         SignEventBus();
 
-
         userDao = JApplication.getInstance().getDb().userDao();
         emailDao = JApplication.getInstance().getDb().EmailDao();
 
@@ -110,27 +109,25 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
 
     @Override
     protected void setListeners(final ActivityHomeBinding binding) {
-        binding.avatar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(HomeActivity.this, ManagerAccountActivity.class));
-            }
+        binding.avatar.setOnClickListener(view -> startActivity(new Intent(HomeActivity.this, ManagerAccountActivity.class)));
+
+        ModelManager.getManager().getMainAccountModel().getUser().observe(this, account -> {
+            Glide.with(HomeActivity.this)
+                    .load(account.getLocalUser().getAvatar())
+                    .into(new SimpleTarget<Drawable>() {
+                        @Override
+                        public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                            binding.avatar.setDrawable(resource);
+                        }
+                    });
+
+            binding.avatar.setOnline(account.isOnline());
         });
 
-        ModelManager.getManager().getMainAccountModel().getUser().observe(this, new Observer<Account>() {
-            @Override
-            public void onChanged(Account account) {
-                Glide.with(HomeActivity.this)
-                        .load(account.getLocalUser().getAvatar())
-                        .into(new SimpleTarget<Drawable>() {
-                            @Override
-                            public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                binding.avatar.setDrawable(resource);
-                            }
-                        });
-
-                binding.avatar.setOnline(account.isOnline());
-            }
+        binding.menu.setOnLongClickListener(v -> {
+            EmailPopMenu wEmailPopMenu = new EmailPopMenu(HomeActivity.this);
+            wEmailPopMenu.showPopUpWindow(binding.menu,-10,10);
+            return true;
         });
     }
 
@@ -167,9 +164,6 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                             avatarView.setOnClickListener(v -> {
                                 //添加新联系人
 
-
-
-
                             });
                         } else {
                             final AvatarView avatarView = holder.findViewById(R.id.avatar);
@@ -188,6 +182,9 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                             contactName.setText(contact.getLocalUser().getNickname());
                             avatarView.setOnClickListener(v -> {
                                 //发送邮件
+                                WEmailDialog wEmailDialog = new WEmailDialog(HomeActivity.this,ModelManager.getManager().getMainAccountModel().getUser().getValue());
+                                wEmailDialog.showDialog();
+                                wEmailDialog.addReceivers(contact);
 
 
                             });
@@ -229,12 +226,7 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                     }
                 });
 
-        ModelManager.getManager().getContactModel().getContacts().observe(this, new Observer<List<Contact>>() {
-            @Override
-            public void onChanged(List<Contact> contacts) {
-                contactJAdapter.adapter.setData(contacts);
-            }
-        });
+        ModelManager.getManager().getContactModel().getContacts().observe(this, contacts -> contactJAdapter.adapter.setData(contacts));
     }
 
     //最近
@@ -299,11 +291,8 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
         }
 
         ModelManager.getManager().getEmailModel().getEmails().setValue(emailList);
-        ModelManager.getManager().getEmailModel().getEmails().observe(this, new Observer<List<Email>>() {
-            @Override
-            public void onChanged(List<Email> emails) {
+        ModelManager.getManager().getEmailModel().getEmails().observe(this, emails -> {
 
-            }
         });
         emailAdapter.adapter.setData(ModelManager.getManager().getEmailModel().getEmails().getValue());
     }
@@ -342,15 +331,12 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                                 mailNum.setBackground(ContextCompat.getDrawable(HomeActivity.this, R.drawable.unlogin_sl));
                                 mailNum.setTextColor(Color.WHITE);
                                 mailNum.setText("请重新登录");
-                                container.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
-                                        Bundle bundle = new Bundle();
-                                        bundle.putSerializable("login", account.getLocalUser());
-                                        intent.putExtras(bundle);
-                                        startActivity(intent);
-                                    }
+                                container.setOnClickListener(view -> {
+                                    Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+                                    Bundle bundle = new Bundle();
+                                    bundle.putSerializable("login", account.getLocalUser());
+                                    intent.putExtras(bundle);
+                                    startActivity(intent);
                                 });
                             } else {
                                 //账号登陆状态
@@ -365,25 +351,17 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                                 }
 
                                 mailNum.setText(account.getEmailNum() + "");
-                                container.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        Intent intent = new Intent(HomeActivity.this, EmailManagerActivity.class);
-                                        Bundle bundle = new Bundle();
-                                        bundle.putSerializable("account", account);
-                                        intent.putExtras(bundle);
-                                        HomeActivity.this.startActivity(intent);
-                                    }
+                                container.setOnClickListener(view -> {
+                                    Intent intent = new Intent(HomeActivity.this, EmailManagerActivity.class);
+                                    Bundle bundle = new Bundle();
+                                    bundle.putSerializable("account", account);
+                                    intent.putExtras(bundle);
+                                    HomeActivity.this.startActivity(intent);
                                 });
                             }
                         } else {
                             RelativeLayout container = holder.findViewById(R.id.container);
-                            container.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    startActivity(new Intent(HomeActivity.this, LoginWayActivity.class));
-                                }
-                            });
+                            container.setOnClickListener(view -> startActivity(new Intent(HomeActivity.this, LoginWayActivity.class)));
                         }
                     }
 
@@ -401,14 +379,13 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                 }
         );
 
-        ModelManager.getManager().getAccountModel().getAccounts().observe(this, new Observer<List<Account>>() {
-            @Override
-            public void onChanged(List<Account> accounts) {
-                System.out.println("我的邮箱有数据变化");
-                accountJAdapter.adapter.setData(accounts);
-            }
+        ModelManager.getManager().getAccountModel().getAccounts().observe(this, accounts -> {
+            System.out.println("我的邮箱有数据变化");
+            accountJAdapter.adapter.setData(accounts);
         });
     }
+
+
 
     private String CalculateTimeDifference(String timeStr) {
         StringBuffer sb = new StringBuffer();
@@ -452,7 +429,7 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
     }
 
 
-    private void Auto(boolean autuLogin) {
+    private void Auto(boolean autoLogin) {
         List<Account> accounts = ModelManager.getManager().getAccountModel().getAccounts().getValue();
         assert accounts != null;
         if (accounts.isEmpty()) return;
@@ -462,7 +439,7 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                 account.setEmailNum(mmkv.decodeInt(account.getLocalUser().getId() + "inbox"));
                 ModelManager.getManager().getAccountModel().updateMegNum(account);
 
-                if (autuLogin) AutoLogin(account);
+                if (autoLogin) AutoLogin(account);
                 else {
                     if (account.getLocalUser().isMainAccount()) GetContacts(account.getLocalUser());
                     getMessageNums(account);
@@ -538,12 +515,9 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                         System.out.println("*********************************************************************" + user.toString());
                         contacts.add(new Contact(user, false));
                     }
-                    new Handler(Looper.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            ModelManager.getManager().getContactModel().addContacts(contacts);
-                            SubscribeUserStatus(contacts);
-                        }
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        ModelManager.getManager().getContactModel().addContacts(contacts);
+                        SubscribeUserStatus(contacts);
                     });
                     return true;
                 }
@@ -682,23 +656,13 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                         System.out.println(u.getNickname() + "  , ID:  " + u.getId() + ",uuid失效");
                         u.setUUID(null);
                         userDao.updateUsers(u);
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                ModelManager.getManager().refreshAccountModel();
-                            }
-                        });
+                        new Handler(Looper.getMainLooper()).post(() -> ModelManager.getManager().refreshAccountModel());
                     }
                 }
                 break;
             case CommandType.MESSAGE:
                 //收到消息
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(HomeActivity.this, "目标：" + target + ",内容：" + content, Toast.LENGTH_SHORT).show();
-                    }
-                });
+                new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(HomeActivity.this, "目标：" + target + ",内容：" + content, Toast.LENGTH_SHORT).show());
                 break;
             case CommandType.CONNECT:
 //                用户上线

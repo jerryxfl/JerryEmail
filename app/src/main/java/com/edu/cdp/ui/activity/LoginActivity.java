@@ -63,20 +63,14 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
 
             binding.email.setText(login.getUsername());
             binding.password.setText(login.getPassword());
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    Glide.with(LoginActivity.this)
-                            .load(login.getAvatar())
-                            .into(new SimpleTarget<Drawable>() {
-                                @Override
-                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                    binding.avatar.setDrawable(resource);
-                                }
-                            });
-
-                }
-            });
+            new Handler(Looper.getMainLooper()).post(() -> Glide.with(LoginActivity.this)
+                    .load(login.getAvatar())
+                    .into(new SimpleTarget<Drawable>() {
+                        @Override
+                        public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                            binding.avatar.setDrawable(resource);
+                        }
+                    }));
         }
     }
 
