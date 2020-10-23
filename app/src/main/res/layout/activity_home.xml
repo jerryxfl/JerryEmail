@@ -146,6 +146,9 @@
                             android:overScrollMode="never"/>
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
+                <com.edu.cdp.custom.SearchAnimationButton
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"/>
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </RelativeLayout>

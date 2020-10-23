@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -139,26 +140,6 @@ public class WEmailDialog extends BaseDialog {
                                 AddOpen =false;
 
                                 AnimatorSet set = new AnimatorSet();
-
-                                ValueAnimator LMarginValueAnimator = ValueAnimator.ofInt(dip2px(5),0);
-                                LMarginValueAnimator.addUpdateListener(animation -> {
-                                    LinearLayout.LayoutParams EdtParams = (LinearLayout.LayoutParams) username.getLayoutParams();
-                                    EdtParams.leftMargin = (int) animation.getAnimatedValue();
-                                    username.setLayoutParams(EdtParams);
-
-                                    LinearLayout.LayoutParams TvParams = (LinearLayout.LayoutParams) search.getLayoutParams();
-                                    TvParams.rightMargin = (int) animation.getAnimatedValue();
-                                    search.setLayoutParams(TvParams);
-                                });
-
-
-                                ValueAnimator RMarginValueAnimator = ValueAnimator.ofInt(dip2px(10),0);
-                                RMarginValueAnimator.addUpdateListener(animation -> {
-                                    LinearLayout.LayoutParams TvParams = (LinearLayout.LayoutParams) search.getLayoutParams();
-                                    TvParams.leftMargin = (int) animation.getAnimatedValue();
-                                    search.setLayoutParams(TvParams);
-                                });
-
                                 DisplayMetrics dm = context.getResources().getDisplayMetrics();
                                 float scaledDensity = dm.scaledDensity;
 
@@ -187,8 +168,8 @@ public class WEmailDialog extends BaseDialog {
 
 
 
-                                set.playTogether(LMarginValueAnimator,RMarginValueAnimator,EditWidthValueAnimator,TextWidthValueAnimator);
-                                set.setDuration(500);
+                                set.playTogether(EditWidthValueAnimator,TextWidthValueAnimator);
+                                set.setDuration(200);
                                 set.addListener(new AnimatorListenerAdapter() {
                                     @Override
                                     public void onAnimationEnd(Animator animation) {
@@ -211,26 +192,6 @@ public class WEmailDialog extends BaseDialog {
 
                                 //开启动画
                                 AnimatorSet set = new AnimatorSet();
-
-                                ValueAnimator LMarginValueAnimator = ValueAnimator.ofInt(0,dip2px(5));
-                                LMarginValueAnimator.addUpdateListener(animation -> {
-                                    LinearLayout.LayoutParams EdtParams = (LinearLayout.LayoutParams) username.getLayoutParams();
-                                    EdtParams.leftMargin = (int) animation.getAnimatedValue();
-                                    username.setLayoutParams(EdtParams);
-
-                                    LinearLayout.LayoutParams TvParams = (LinearLayout.LayoutParams) search.getLayoutParams();
-                                    TvParams.rightMargin = (int) animation.getAnimatedValue();
-                                    search.setLayoutParams(TvParams);
-                                });
-
-
-                                ValueAnimator RMarginValueAnimator = ValueAnimator.ofInt(0,dip2px(10));
-                                RMarginValueAnimator.addUpdateListener(animation -> {
-                                    LinearLayout.LayoutParams TvParams = (LinearLayout.LayoutParams) search.getLayoutParams();
-                                    TvParams.leftMargin = (int) animation.getAnimatedValue();
-                                    search.setLayoutParams(TvParams);
-                                });
-
                                 DisplayMetrics dm = context.getResources().getDisplayMetrics();
                                 float scaledDensity = dm.scaledDensity;
 
@@ -259,8 +220,8 @@ public class WEmailDialog extends BaseDialog {
 
 
 
-                                set.playTogether(LMarginValueAnimator,RMarginValueAnimator,EditWidthValueAnimator,TextWidthValueAnimator);
-                                set.setDuration(500);
+                                set.playTogether(EditWidthValueAnimator,TextWidthValueAnimator);
+                                set.setDuration(200);
                                 set.addListener(new AnimatorListenerAdapter() {
                                     @Override
                                     public void onAnimationEnd(Animator animation) {
@@ -355,5 +316,14 @@ public class WEmailDialog extends BaseDialog {
     private int dip2px(float dpValue) {
         final float scale = getContext().getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
+    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, @NonNull KeyEvent event) {
+        if(keyCode==KeyEvent.KEYCODE_BACK){
+
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

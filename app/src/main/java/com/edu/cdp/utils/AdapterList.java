@@ -14,11 +14,11 @@ import java.util.Comparator;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-public  class AdapterList<T> extends ArrayList<T> {
+public class AdapterList<T> extends ArrayList<T> {
     private BaseAdapter<T> adapter;
 
     //关联适配器
-    public void relevantAdapter(BaseAdapter<T> adapter){
+    public void relevantAdapter(BaseAdapter<T> adapter) {
         this.adapter = adapter;
         adapter.setData(this);
     }
@@ -26,14 +26,16 @@ public  class AdapterList<T> extends ArrayList<T> {
 
     @Override
     public T set(int index, T element) {
+        super.set(index, element);
         adapter.notifyItemChanged(index);
-        return super.set(index, element);
+        return element;
     }
 
     @Override
     public boolean add(T t) {
+        super.add(t);
         adapter.notifyItemChanged(0);
-        return super.add(t);
+        return true;
     }
 
     @Override
@@ -44,14 +46,17 @@ public  class AdapterList<T> extends ArrayList<T> {
 
     @Override
     public T remove(int index) {
+        T element = get(index);
+        super.remove(index);
         adapter.notifyItemRemoved(index);
-        return super.remove(index);
+        return element;
     }
 
     @Override
     public boolean remove(@Nullable Object o) {
+        super.remove(o);
         adapter.notifyItemRemoved(indexOf(o));
-        return super.remove(o);
+        return true;
     }
 
     @Override
@@ -62,39 +67,44 @@ public  class AdapterList<T> extends ArrayList<T> {
 
     @Override
     public boolean addAll(@NonNull Collection<? extends T> c) {
+        super.addAll(c);
         adapter.notifyDataSetChanged();
-        return super.addAll(c);
+        return true;
     }
 
     @Override
     public boolean addAll(int index, @NonNull Collection<? extends T> c) {
+        super.addAll(index, c);
         adapter.notifyDataSetChanged();
-        return super.addAll(index, c);
+        return true;
     }
 
     @Override
     protected void removeRange(int fromIndex, int toIndex) {
         super.removeRange(fromIndex, toIndex);
-        adapter.notifyItemRangeRemoved(fromIndex,toIndex);
+        adapter.notifyItemRangeRemoved(fromIndex, toIndex);
     }
 
     @Override
     public boolean removeAll(@NonNull Collection<?> c) {
-        adapter.notifyItemRangeRemoved(0,size()-1);
-        return super.removeAll(c);
+        super.removeAll(c);
+        adapter.notifyDataSetChanged();
+        return true;
     }
 
     @Override
     public boolean retainAll(@NonNull Collection<?> c) {
+        super.retainAll(c);
         adapter.notifyDataSetChanged();
-        return super.retainAll(c);
+        return true;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public boolean removeIf(@NonNull Predicate<? super T> filter) {
+        super.removeIf(filter);
         adapter.notifyDataSetChanged();
-        return super.removeIf(filter);
+        return true;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)

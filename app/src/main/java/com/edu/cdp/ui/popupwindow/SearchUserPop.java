@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -103,22 +104,26 @@ public class SearchUserPop extends BasePopupWindow {
         OkHttpUtils.GET(Constants.GETCONTACTINFODIM + uNameText, null, new OkHttpUtils.Jcallback() {
             @Override
             public void onFailure() {
-                dismissPopUpWindow();
+                searchContactInfoLocal(uNameText);
             }
 
             @Override
             public boolean onResponseAsync(JSONObject response) {
                 int code = response.getInteger("code");
                 if(code == 400){
-                    new Handler(Looper.getMainLooper()).post(() -> {
-                        loading.setVisibility(View.GONE);
-                        contactRecycler.setVisibility(View.VISIBLE);
-                    });
                     List<User> data = GsonUtil.jsonToList(response.getString("data"), User.class);
-                    for (User user : data) {
-                        System.out.println(user.getNickname()+"  "+user.getAvatar());
-                        if(!user.getUsername().equals(ModelManager.getManager().getMainAccountModel().getUser().getValue().getLocalUser().getUsername()))
-                            contacts.add(0,new Contact(user, false));
+                    if(data.size()==0){
+                        searchContactInfoLocal(uNameText);
+                    }else{
+                        new Handler(Looper.getMainLooper()).post(() -> {
+                            loading.setVisibility(View.GONE);
+                            contactRecycler.setVisibility(View.VISIBLE);
+                        });
+                        for (User user : data) {
+                            System.out.println(user.getNickname()+"  "+user.getAvatar());
+                            if(!user.getUsername().equals(ModelManager.getManager().getMainAccountModel().getUser().getValue().getLocalUser().getUsername()))
+                                contacts.add(0,new Contact(user, false));
+                        }
                     }
                     return  true;
                 }
@@ -129,6 +134,20 @@ public class SearchUserPop extends BasePopupWindow {
             public void onSuccess() {
             }
         });
+    }
+
+    private void searchContactInfoLocal(String uNameText){
+        List<Contact> value = ModelManager.getManager().getContactModel().getContacts().getValue();
+        for (Contact contact : value) {
+            if(contact.getLocalUser()!=null)if(contact.getLocalUser().getUsername().equals(uNameText)){
+                contacts.add(0,contact);
+            }
+        }
+
+        if(contacts.size()==0){
+            new Handler(Looper.getMainLooper()).postDelayed(this::dismissPopUpWindow,1000);
+        }
+
     }
 
     @Override

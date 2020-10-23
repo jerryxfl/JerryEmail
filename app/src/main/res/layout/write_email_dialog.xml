@@ -118,7 +118,7 @@
     </LinearLayout>
 
     <androidx.cardview.widget.CardView
-        app:cardElevation="10dp"
+        app:cardElevation="20dp"
         android:id="@+id/controlBar"
         android:layout_width="match_parent"
         android:layout_height="50dp"
