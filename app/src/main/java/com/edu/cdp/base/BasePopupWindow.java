@@ -103,6 +103,13 @@ public abstract class BasePopupWindow {
         }
     }
 
+    public boolean isShowing(){
+        if(popupWindow!=null){
+            return popupWindow.isShowing();
+        }else {
+            throw new NullPointerException("PopUpWindow还未创建");
+        }
+    }
 
     public interface popupWindowListener{
         void onShow();

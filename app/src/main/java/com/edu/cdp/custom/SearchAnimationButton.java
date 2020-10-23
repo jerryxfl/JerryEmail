@@ -16,13 +16,14 @@ import android.graphics.PathMeasure;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 
 import static android.view.animation.Animation.INFINITE;
 
-public class SearchAnimationButton extends View implements View.OnClickListener {
+public class SearchAnimationButton extends View {
     private Context mContext;
     private int w, h;
     private int strokeWidth = dip2px(10);
@@ -36,15 +37,20 @@ public class SearchAnimationButton extends View implements View.OnClickListener 
     //正在搜索
     private Paint searchPaint;
     private Path searchPath;
+    private boolean isFirst = true;
 
     //搜索完成
     private Paint endPaint;
     private Path endPath;
 
 
+    private SearchListener searchListener;
+
     //NORMAL
     private int status = Status.NORMAL;
-
+    private ValueAnimator valueAnimator;
+    private ValueAnimator searchValueAnimator;
+    private ValueAnimator endValueAnimator;
 
     public class Status {
         public static final int NORMAL = 0;
@@ -78,35 +84,36 @@ public class SearchAnimationButton extends View implements View.OnClickListener 
         p.setDither(true);
         p.setStyle(Paint.Style.STROKE);
         p.setColor(Color.BLUE);
-        p.setStrokeCap(Paint.Cap.ROUND);
         normalPaint = p;
         searchPaint = p;
+        searchPaint.setStrokeCap(Paint.Cap.ROUND);
         endPaint = p;
-
+        endPaint.setStrokeCap(Paint.Cap.ROUND);
 
 
         normalPath = new Path();
         searchPath = new Path();
         endPath = new Path();
 
-        setOnClickListener(this::onClick);
     }
 
 
-    @Override
-    public void onClick(View v) {
-        start();
+    public void startSearch() {
+        if (status == Status.NORMAL) {
+            if (valueAnimator == null) {
+                valueAnimator = ValueAnimator.ofFloat(1, 0);
+                searchValueAnimator = ValueAnimator.ofFloat(1, 0);
+                endValueAnimator = ValueAnimator.ofFloat(0, 1);
+                initializeAnimator();
+            }
+            status = Status.TOSEARCH;
+            valueAnimator.start();
+        }
     }
 
 
-    public void start() {
-        status = Status.TOSEARCH;
-        ValueAnimator valueAnimator = ValueAnimator.ofFloat(1,0);
-        ValueAnimator searchValueAnimator = ValueAnimator.ofFloat(1,0);
-        ValueAnimator endValueAnimator = ValueAnimator.ofFloat(0,1);
-
-
-        valueAnimator.setDuration(1000);
+    private void initializeAnimator() {
+        valueAnimator.setDuration(500);
         valueAnimator.addUpdateListener(animation -> {
             progress = (float) animation.getAnimatedValue();
             invalidate();
@@ -115,14 +122,14 @@ public class SearchAnimationButton extends View implements View.OnClickListener 
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                status =Status.SEARCHING;
+                status = Status.SEARCHING;
+                if (searchListener != null) searchListener.onSearching();
                 searchValueAnimator.start();
             }
         });
-        valueAnimator.start();
 
 
-        searchValueAnimator.setDuration(2000);
+        searchValueAnimator.setDuration(1000);
         searchValueAnimator.addUpdateListener(animation -> {
             progress = (float) animation.getAnimatedValue();
             invalidate();
@@ -131,28 +138,37 @@ public class SearchAnimationButton extends View implements View.OnClickListener 
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                if(status==Status.SEARCHING){
-                    status=Status.END;
+                if (status == Status.SEARCHING) {
+                    isFirst = false;
                     searchValueAnimator.start();
                 }
-                if(status==Status.END)endValueAnimator.start();
+                if (status == Status.END) {
+                    isFirst = true;
+                    endValueAnimator.start();
+                }
             }
         });
 
 
-        endValueAnimator.setDuration(3000);
+        endValueAnimator.setDuration(500);
         endValueAnimator.addUpdateListener(animation -> {
             progress = (float) animation.getAnimatedValue();
             invalidate();
         });
         endValueAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+            }
+
+            @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     status = Status.NORMAL;
                     invalidate();
-                },2000);
+                    if (searchListener != null) searchListener.onSearchComplete();
+                }, 2000);
             }
         });
     }
@@ -162,9 +178,8 @@ public class SearchAnimationButton extends View implements View.OnClickListener 
         super.onSizeChanged(w, h, oldw, oldh);
         this.w = w;
         this.h = h;
-        this.strokeWidth = w/14;
+        this.strokeWidth = w / 14;
         normalPath.reset();
-        normalPath.addCircle(w / 2, h / 2, w / 4 - strokeWidth, Path.Direction.CW);
         normalPath.moveTo(w / 2 + (float) Math.cos(Math.toRadians(45)) * w / 4, w / 2 + (float) Math.sin(Math.toRadians(45)) * w / 4);
         normalPath.lineTo(w / 2 + (float) Math.cos(Math.toRadians(45)) * w / 2, w / 2 + (float) Math.sin(Math.toRadians(45)) * w / 2);
         normalPath.close();
@@ -175,9 +190,9 @@ public class SearchAnimationButton extends View implements View.OnClickListener 
         searchPath.close();
 
         endPath.reset();
-        endPath.moveTo(w/4,h/2);
-        endPath.lineTo(w/2,h*3/4);
-        endPath.lineTo(w*7/8,h*3/8);
+        endPath.moveTo(w / 4, h / 2);
+        endPath.lineTo(w / 2, h * 3 / 4);
+        endPath.lineTo(w * 7 / 8, h * 3 / 8);
 
 
         normalPaint.setStrokeWidth(strokeWidth);
@@ -195,17 +210,11 @@ public class SearchAnimationButton extends View implements View.OnClickListener 
         //at_most wrap_content
         //exactly match_parent  65dp
         //unexpect 未指定
-        if (widthMode == MeasureSpec.AT_MOST) {
-            specWidth = Math.max(width, dip2px(20));
-        } else if (widthMode == MeasureSpec.EXACTLY) {
-            specWidth = width;
-        } else if (widthMode == MeasureSpec.UNSPECIFIED) {
-            specWidth = Math.max(width, dip2px(20));
-        }
+        specWidth = width;
+
         specHeight = specWidth;
         setMeasuredDimension(specWidth, specHeight);
     }
-
 
 
     @Override
@@ -214,48 +223,74 @@ public class SearchAnimationButton extends View implements View.OnClickListener 
         switch (status) {
             case Status.NORMAL:
                 canvas.drawPath(normalPath, normalPaint);
+                canvas.drawPath(searchPath, normalPaint);
                 break;
             case Status.TOSEARCH:
+                canvas.drawPath(searchPath, normalPaint);
                 PathMeasure pathMeasure = new PathMeasure();
                 pathMeasure.setPath(normalPath, true);
                 Path p = new Path();
-                float stop = pathMeasure.getLength()*progress;
-                float start = (float) (stop - ((0.5 - Math.abs(progress - 0.5)) * pathMeasure.getLength()));
-
-                pathMeasure.getSegment(start,stop,p,true);
-                canvas.drawPath(p, normalPaint);
-
-                pathMeasure.nextContour();
-                stop = pathMeasure.getLength()*progress;
-                pathMeasure.getSegment(0,stop,p,true);
+                float stop = pathMeasure.getLength() * progress;
+                pathMeasure.getSegment(0, stop, p, true);
                 canvas.drawPath(p, normalPaint);
                 break;
             case Status.SEARCHING:
                 pathMeasure = new PathMeasure();
                 pathMeasure.setPath(searchPath, true);
                 p = new Path();
-                stop = pathMeasure.getLength()*progress;
-                start = (float) (stop - ((0.5 - Math.abs(progress - 0.5)) * pathMeasure.getLength()));
-                pathMeasure.getSegment(start,stop,p,true);
+                stop = pathMeasure.getLength() * progress;
+                float start = 0;
+                if (!isFirst)
+                    start = (float) (stop - ((0.5 - Math.abs(progress - 0.5)) * pathMeasure.getLength()));
+                pathMeasure.getSegment(start, stop, p, true);
                 canvas.drawPath(p, searchPaint);
-
                 break;
             case Status.END:
                 pathMeasure = new PathMeasure();
                 pathMeasure.setPath(endPath, false);
                 p = new Path();
-                stop = pathMeasure.getLength()*progress;
-                pathMeasure.getSegment(0,stop,p,true);
+                stop = pathMeasure.getLength() * progress;
+                pathMeasure.getSegment(0, stop, p, true);
                 canvas.drawPath(p, endPaint);
                 break;
         }
-
-
     }
 
 
     private int dip2px(float dpValue) {
         final float scale = getContext().getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
+    }
+
+
+    public void setLoadingComplete() {
+        if (status == Status.SEARCHING) status = Status.END;
+        else if(status == Status.TOSEARCH){
+            new Handler(Looper.getMainLooper()).postDelayed(()->{
+                status = Status.END;
+            },1000);
+        }
+    }
+
+    public void reset() {
+        status = Status.NORMAL;
+        if(valueAnimator!=null){
+            if (valueAnimator.isRunning()) valueAnimator.cancel();
+            if (searchValueAnimator.isRunning()) searchValueAnimator.cancel();
+            if (endValueAnimator.isRunning()) endValueAnimator.cancel();
+        }
+        invalidate();
+    }
+
+
+    public void setSearchListener(SearchListener searchListener) {
+        this.searchListener = searchListener;
+    }
+
+
+    public interface SearchListener {
+        void onSearching();
+
+        void onSearchComplete();
     }
 }

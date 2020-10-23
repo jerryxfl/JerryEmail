@@ -132,6 +132,7 @@ public class SearchUserPop extends BasePopupWindow {
 
             @Override
             public void onSuccess() {
+                if(contactOnSelectionListener!=null)contactOnSelectionListener.onSearchComplete();
             }
         });
     }
@@ -148,6 +149,7 @@ public class SearchUserPop extends BasePopupWindow {
             new Handler(Looper.getMainLooper()).postDelayed(this::dismissPopUpWindow,1000);
         }
 
+        if(contactOnSelectionListener!=null)contactOnSelectionListener.onSearchComplete();
     }
 
     @Override
@@ -166,5 +168,7 @@ public class SearchUserPop extends BasePopupWindow {
 
     public interface ContactOnSelectionListener {
         void onSelect(Contact contact);
+
+        void onSearchComplete();
     }
 }

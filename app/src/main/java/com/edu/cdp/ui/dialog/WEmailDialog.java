@@ -9,6 +9,8 @@ import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Gravity;
@@ -42,10 +44,13 @@ import com.edu.cdp.bean.Account;
 import com.edu.cdp.bean.Constants;
 import com.edu.cdp.bean.Contact;
 import com.edu.cdp.custom.CircleOnlineAvatar;
+import com.edu.cdp.custom.SearchAnimationButton;
+import com.edu.cdp.model.manager.ModelManager;
 import com.edu.cdp.net.okhttp.OkHttpUtils;
 import com.edu.cdp.response.User;
 import com.edu.cdp.ui.popupwindow.SearchUserPop;
 import com.edu.cdp.utils.AdapterList;
+import com.edu.cdp.utils.GsonUtil;
 import com.edu.cdp.utils.SoftKeyBoardListener;
 
 import java.util.List;
@@ -130,7 +135,7 @@ public class WEmailDialog extends BaseDialog {
                     });
                 }else{
                     EditText username = holder.findViewById(R.id.username_edt);
-                    TextView search = holder.findViewById(R.id.search);
+                    SearchAnimationButton search = holder.findViewById(R.id.search);
                     LinearLayout container = holder.findViewById(R.id.container);
 
                     avatar.setOnClickListener(v->{
@@ -139,43 +144,29 @@ public class WEmailDialog extends BaseDialog {
                             if(AddOpen){
                                 AddOpen =false;
 
-                                AnimatorSet set = new AnimatorSet();
-                                DisplayMetrics dm = context.getResources().getDisplayMetrics();
-                                float scaledDensity = dm.scaledDensity;
+                                ValueAnimator valueAnimator = ValueAnimator.ofInt(dip2px(50),0);
+                                valueAnimator.addUpdateListener(animation -> {
+                                    int progress = (int) animation.getAnimatedValue();
 
-                                Paint p = new Paint();
-                                p.setTextSize(12*scaledDensity);
-                                Rect bounds=new Rect();
-                                p.getTextBounds("搜索", 0, "搜索".length(), bounds);
-                                //获取文本宽度
-                                int textWidth=bounds.width();
-
-
-                                ValueAnimator TextWidthValueAnimator = ValueAnimator.ofInt(textWidth*2,0);
-                                TextWidthValueAnimator.addUpdateListener(animation -> {
-                                    LinearLayout.LayoutParams TvParams = (LinearLayout.LayoutParams) search.getLayoutParams();
-                                    TvParams.width = (int) animation.getAnimatedValue();
-                                    search.setLayoutParams(TvParams);
-                                });
-
-                                ValueAnimator EditWidthValueAnimator = ValueAnimator.ofInt(dip2px(50),0);
-                                EditWidthValueAnimator.addUpdateListener(animation -> {
                                     LinearLayout.LayoutParams EdtParams = (LinearLayout.LayoutParams) username.getLayoutParams();
-                                    EdtParams.width = (int) animation.getAnimatedValue();
+                                    EdtParams.width =progress;
                                     username.setLayoutParams(EdtParams);
+
+                                    if(progress<dip2px(30)){
+                                        LinearLayout.LayoutParams SearchParams = (LinearLayout.LayoutParams) search.getLayoutParams();
+                                        SearchParams.width = progress;
+                                        search.setLayoutParams(SearchParams);
+                                    }
                                 });
 
-
-
-
-                                set.playTogether(EditWidthValueAnimator,TextWidthValueAnimator);
-                                set.setDuration(200);
-                                set.addListener(new AnimatorListenerAdapter() {
+                                valueAnimator.setDuration(200);
+                                valueAnimator.addListener(new AnimatorListenerAdapter() {
                                     @Override
                                     public void onAnimationEnd(Animator animation) {
                                         super.onAnimationEnd(animation);
                                         AddOnClick = false;
                                         container.setBackground(null);
+                                        search.reset();
                                         username.setText("");
                                     }
 
@@ -185,44 +176,27 @@ public class WEmailDialog extends BaseDialog {
                                         AddOnClick = true;
                                     }
                                 });
-                                set.start();
+                                valueAnimator.start();
 
                             }else{
                                 AddOpen =true;
 
-                                //开启动画
-                                AnimatorSet set = new AnimatorSet();
-                                DisplayMetrics dm = context.getResources().getDisplayMetrics();
-                                float scaledDensity = dm.scaledDensity;
+                                ValueAnimator valueAnimator = ValueAnimator.ofInt(0,dip2px(50));
+                                valueAnimator.addUpdateListener(animation -> {
+                                    int progress = (int) animation.getAnimatedValue();
 
-                                Paint p = new Paint();
-                                p.setTextSize(12*scaledDensity);
-                                Rect bounds=new Rect();
-                                p.getTextBounds("搜索", 0, "搜索".length(), bounds);
-                                //获取文本宽度
-                                int textWidth=bounds.width();
-
-
-                                ValueAnimator TextWidthValueAnimator = ValueAnimator.ofInt(0,textWidth*2);
-                                TextWidthValueAnimator.addUpdateListener(animation -> {
-                                    LinearLayout.LayoutParams TvParams = (LinearLayout.LayoutParams) search.getLayoutParams();
-                                    TvParams.width = (int) animation.getAnimatedValue();
-                                    search.setLayoutParams(TvParams);
-                                });
-
-                                ValueAnimator EditWidthValueAnimator = ValueAnimator.ofInt(0,dip2px(50));
-                                EditWidthValueAnimator.addUpdateListener(animation -> {
                                     LinearLayout.LayoutParams EdtParams = (LinearLayout.LayoutParams) username.getLayoutParams();
-                                    EdtParams.width = (int) animation.getAnimatedValue();
+                                    EdtParams.width = progress;
                                     username.setLayoutParams(EdtParams);
+                                    if(progress<dip2px(30)){
+                                        LinearLayout.LayoutParams SearchParams = (LinearLayout.LayoutParams) search.getLayoutParams();
+                                        SearchParams.width = progress;
+                                        search.setLayoutParams(SearchParams);
+                                    }
                                 });
 
-
-
-
-                                set.playTogether(EditWidthValueAnimator,TextWidthValueAnimator);
-                                set.setDuration(200);
-                                set.addListener(new AnimatorListenerAdapter() {
+                                valueAnimator.setDuration(200);
+                                valueAnimator.addListener(new AnimatorListenerAdapter() {
                                     @Override
                                     public void onAnimationEnd(Animator animation) {
                                         super.onAnimationEnd(animation);
@@ -236,7 +210,7 @@ public class WEmailDialog extends BaseDialog {
                                         container.setBackground(ContextCompat.getDrawable(context, R.drawable.contact_add_item_outline));
                                     }
                                 });
-                                set.start();
+                                valueAnimator.start();
 
 
                             }
@@ -249,19 +223,28 @@ public class WEmailDialog extends BaseDialog {
                         if(uNameText.equals("")){
                             Toast.makeText(context,"空值",Toast.LENGTH_SHORT).show();
                         }else{
+                            search.startSearch();
                             SearchUserPop searchUserPop = new SearchUserPop(context);
                             searchUserPop.showPopUpWindow(avatar,-dip2px(5),-dip2px(70));
                             searchUserPop.searchContactInfo(uNameText);
-                            searchUserPop.setContactOnSelectionListener(contact1 -> {
-                                searchUserPop.dismissPopUpWindow();
-                                boolean add = true;
-                                for (int i = 0; i < contacts.size(); i++) {
-                                    if(contacts.get(i).getLocalUser()!=null){
-                                        if(contacts.get(i).getLocalUser().getUsername().equals(contact1.getLocalUser().getUsername()))add = false;
+                            searchUserPop.setContactOnSelectionListener(new SearchUserPop.ContactOnSelectionListener() {
+                                @Override
+                                public void onSelect(Contact contact) {
+                                    searchUserPop.dismissPopUpWindow();
+                                    boolean add = true;
+                                    for (int i = 0; i < contacts.size(); i++) {
+                                        if(contacts.get(i).getLocalUser()!=null){
+                                            if(contacts.get(i).getLocalUser().getUsername().equals(contact.getLocalUser().getUsername()))add = false;
+                                        }
                                     }
+                                    if(add)addReceivers(contact);
+                                    else Toast.makeText(context,"用户已添加",Toast.LENGTH_SHORT).show();
                                 }
-                                if(add)addReceivers(contact1);
-                                else Toast.makeText(context,"用户已添加",Toast.LENGTH_SHORT).show();
+
+                                @Override
+                                public void onSearchComplete() {
+                                    search.setLoadingComplete();
+                                }
                             });
                             searchUserPop.setPopupWindowListener(new BasePopupWindow.popupWindowListener() {
                                 @Override
