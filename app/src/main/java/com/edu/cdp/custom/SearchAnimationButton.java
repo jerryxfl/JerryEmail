@@ -89,7 +89,7 @@ public class SearchAnimationButton extends View {
         searchPaint.setStrokeCap(Paint.Cap.ROUND);
         endPaint = p;
         endPaint.setStrokeCap(Paint.Cap.ROUND);
-
+        endPaint.setStrokeJoin(Paint.Join.ROUND);
 
         normalPath = new Path();
         searchPath = new Path();
