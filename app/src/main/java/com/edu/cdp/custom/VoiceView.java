@@ -43,7 +43,7 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
 
     private String url;
     private final boolean mPlayStatus = false;
-    private byte[] mFft;
+    private byte[] mFft,mLastFft;
     private MediaPlayer mMediaPlayer;
     private Visualizer visualizer;
     private Random random;
@@ -344,7 +344,7 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
                     if(mMediaPlayer!=null)musicProgress = mMediaPlayer.getCurrentPosition();
                     invalidate();
                 }
-            }, Visualizer.getMaxCaptureRate() / 2, true, true);
+            }, Visualizer.getMaxCaptureRate() / 2, false, true);
             //开启采样
             visualizer.setEnabled(true);
 
@@ -437,7 +437,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
         int h = getHeight();
         int w2 = w - (h + dip2px(5));
 
-        mPathPaint.setShader(null);
         mPathPaint.setStyle(Paint.Style.FILL);
         mPathPaint.setColor(Color.parseColor("#2ecc71"));
         canvas.drawPath(path, mPathPaint);
@@ -524,7 +523,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
 
         //画柱状波形图
         if (mFft == null) {
-            mPathPaint.setShader(null);
             mPathPaint.setStyle(Paint.Style.STROKE);
             mPathPaint.setStrokeWidth(w2 / 20);
             mPathPaint.setColor(Color.WHITE);
@@ -538,15 +536,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
             mPathPaint.setStrokeWidth(w2 / 20);
             mPathPaint.setStrokeCap(Paint.Cap.ROUND);
 
-            float start = musicProgress/musicMax;
-            float end = 1-start;
-            @SuppressLint("DrawAllocation") LinearGradient linearGradient
-                    = new LinearGradient(0,0,w2,0,
-                    new int[]{Color.parseColor("#15aabf"),Color.WHITE},
-                    new float[]{start,end},
-                    Shader.TileMode.CLAMP);
-
-            mPathPaint.setShader(linearGradient);
             for (int i = 1; i < 13; i++) {
                 if (mFft[i] > h / 2 || mFft[i] == 0 || mFft[i] < 0)
                     mFft[i] = (byte) random.nextInt(h / 2);

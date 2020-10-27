@@ -23,6 +23,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup"
         tools:targetApi="n">
+        <activity android:name=".ui.activity.UInfoActivity"></activity>
         <activity android:name=".ui.activity.GeneralSettingsActivity" />
         <activity android:name=".ui.activity.EmailActivity" />
         <activity android:name=".ui.activity.EmailListActivity" />
@@ -37,7 +38,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activity.GuideActivity"/>
+        <activity android:name=".ui.activity.GuideActivity" />
     </application>
 
 </manifest>

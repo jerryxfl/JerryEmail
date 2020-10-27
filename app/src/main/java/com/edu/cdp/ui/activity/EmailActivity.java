@@ -85,6 +85,7 @@ public class EmailActivity extends BaseActivity<ActivityEmailBinding> {
                     binding.other.addView(textView);
                     break;
                 case "link":
+                    binding.loadingView.setVisibility(View.VISIBLE);
                     handler.sendEmptyMessageDelayed(0,random.nextInt(2000)+3000);
                     break;
                 case "voice":

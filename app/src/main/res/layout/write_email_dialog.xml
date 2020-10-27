@@ -124,11 +124,52 @@
         android:layout_height="50dp"
         app:cardBackgroundColor="#ffffff"
         android:layout_alignParentBottom="true">
-        <LinearLayout
+        <RelativeLayout
+            android:padding="10dp"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+                <ImageButton
+                    android:id="@+id/voice"
+                    android:background="@null"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/voice"
+                    android:scaleType="centerCrop"
+                    android:layout_gravity="center"/>
+                <ImageButton
+                    android:id="@+id/html"
+                    android:layout_marginStart="20dp"
+                    android:background="@null"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/html"
+                    android:scaleType="centerCrop"
+                    android:layout_gravity="center"/>
+                <ImageButton
+                    android:id="@+id/accessory"
+                    android:layout_marginStart="20dp"
+                    android:background="@null"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/accessory"
+                    android:scaleType="centerCrop"
+                    android:layout_gravity="center"/>
 
-        </LinearLayout>
+            </LinearLayout>
+            <ImageButton
+                android:id="@+id/add"
+                android:layout_marginStart="20dp"
+                android:background="@null"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/add"
+                android:scaleType="centerCrop"
+                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true"/>
+        </RelativeLayout>
     </androidx.cardview.widget.CardView>
 </RelativeLayout>

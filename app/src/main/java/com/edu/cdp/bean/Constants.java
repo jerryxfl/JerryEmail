@@ -1,7 +1,7 @@
 package com.edu.cdp.bean;
 
 public class Constants {
-    public static final String PORT="47.98.223.82:8080";
+    public static final String PORT="47.98.223.82:8089";
 //    public static final String PORT="192.168.42.40:8080";
 //    public static final String PORT="172.17.175.120:8080";
 
@@ -14,6 +14,8 @@ public class Constants {
 
     //post
     public static final String LOGIN_URL = BASE_URL+"common/login";
+    public static final String SAVE_DRAFT = BASE_URL+"api/save_draft";
+    public static final String SAVE_VOICE = BASE_URL+"api/upload_voice";
 
 
 
@@ -35,5 +37,6 @@ public class Constants {
     public static final String DRAFTBOX_MESSAGE = BASE_URL+"api/draftbox_message?start=";
     public static final String STARBOX_MESSAGE = BASE_URL+"api/starbox_message?start=";
     public static final String GROUPBOX_MESSAGE = BASE_URL+"api/groupbox_message?start=";
+
 
 }

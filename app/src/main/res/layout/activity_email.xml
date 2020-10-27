@@ -94,6 +94,7 @@
                         android:layout_height="match_parent"/>
 
                     <com.edu.cdp.custom.LoadingView
+                        android:visibility="gone"
                         android:id="@+id/loading_view"
                         android:layout_width="50dp"
                         android:layout_height="50dp"

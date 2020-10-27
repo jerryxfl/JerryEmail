@@ -159,7 +159,7 @@ public class SplashView extends View {
             scaleAnimator.setDuration(1000);
             scaleAnimator.setInterpolator(new OvershootInterpolator(10f));
             scaleAnimator.setRepeatMode(ValueAnimator.REVERSE);
-            scaleAnimator.setRepeatCount(ValueAnimator.INFINITE);
+            scaleAnimator.setRepeatCount(2);
             scaleAnimator.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+    <LinearLayout
+        android:orientation="vertical"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:background="@drawable/top_l_r_bottom_l_r_round_shape"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <com.edu.cdp.custom.CircleOnlineAvatar
+                android:layout_gravity="center"
+                android:id="@+id/avatar"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                app:showOnlineState="false"/>
+            <TextView
+                android:layout_gravity="center"
+                android:id="@+id/nickname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Alan Walker"
+                android:textColor="#ffffff"
+                android:layout_marginStart="5dp"
+                android:textSize="16sp"/>
+        </LinearLayout>
+        <TextView
+            android:id="@+id/username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="1072059168@guilang.com"
+            android:textColor="#ffffff"
+            android:layout_marginStart="25dp"
+            android:textSize="12sp"/>
+    </LinearLayout>
+
+    <com.edu.cdp.custom.TriangleView
+        android:layout_marginStart="10dp"
+        android:layout_width="10dp"
+        android:layout_height="5dp"
+        android:rotation="180"
+        app:color="#2f3542"/>
+</LinearLayout>

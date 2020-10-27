@@ -1,8 +1,9 @@
 package com.edu.cdp.response;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class User {
+public class User implements Serializable {
     private int id;
     private String username;
     private String password;

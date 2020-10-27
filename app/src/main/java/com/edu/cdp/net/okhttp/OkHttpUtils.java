@@ -27,6 +27,13 @@ public class OkHttpUtils {
     private static MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
 
+    /**
+     *
+     * @param url 网址
+     * @param headers 请求头 UUID
+     * @param content 内容
+     * @param jcallback 回调函数
+     */
     public static void POST(String url, Map<String, String> headers, Object content, final Jcallback jcallback) {
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .readTimeout(5 * 1000, TimeUnit.MILLISECONDS)
@@ -83,7 +90,12 @@ public class OkHttpUtils {
         });
     }
 
-
+    /**
+     *
+     * @param url 网址
+     * @param headers 请求头 UUID
+     * @param jcallback 回调函数
+     */
     public static void GET(String url, Map<String, String> headers, final Jcallback jcallback) {
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .readTimeout(5 * 1000, TimeUnit.MILLISECONDS)
@@ -137,7 +149,12 @@ public class OkHttpUtils {
     }
 
 
-
+    /**
+     *
+     * @param url 网址
+     * @param headers 请求头 UUID
+     * @param jdownloadCallback 回调函数
+     */
     public static void DOWNLOAD(final String url, final String saveDir, Map<String, String> headers, final JDownloadCallback jdownloadCallback){
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .readTimeout(500  * 1000, TimeUnit.MILLISECONDS)
@@ -228,8 +245,15 @@ public class OkHttpUtils {
     }
 
 
-    private static void UPLOAD(final String url, final String fileDir, Map<String, String> headers, final JUploadCallback jUploadCallback){
-
+    /**
+     *
+     * @param url 网址
+     * @param fileDir 文件地址
+     * @param headers 请求头 UUID
+     * @param name 上传的名字
+     * @param jUploadCallback 回调函数
+     */
+    private static void UPLOAD(final String url, final String fileDir, Map<String, String> headers,String name,final JUploadCallback jUploadCallback){
 
 
     }
