@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.Window;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.edu.cdp.R;
 

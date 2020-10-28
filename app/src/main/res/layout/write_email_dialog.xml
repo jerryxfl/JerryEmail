@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/round_top_shape">
+    android:background="@drawable/round_top_shape"
+    android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -107,69 +109,82 @@
 
             <EditText
                 android:id="@+id/content"
-                android:gravity="top|left"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@null"
-                android:textCursorDrawable="@drawable/textcursor_shape"
-                android:layout_marginBottom="60dp"/>
+                android:gravity="top|left"
+                android:textCursorDrawable="@drawable/textcursor_shape" />
 
         </LinearLayout>
     </LinearLayout>
 
     <androidx.cardview.widget.CardView
+        android:layout_marginBottom="-200dp"
         app:cardElevation="20dp"
         android:id="@+id/controlBar"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        app:cardBackgroundColor="#ffffff"
-        android:layout_alignParentBottom="true">
-        <RelativeLayout
-            android:padding="10dp"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="#ffffff">
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
+<!--            //控制面板-->
+            <RelativeLayout
+                android:padding="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <ImageButton
+                        android:id="@+id/voice"
+                        android:background="@null"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/voice"
+                        android:scaleType="centerCrop"
+                        android:layout_gravity="center"/>
+                    <ImageButton
+                        android:id="@+id/html"
+                        android:layout_marginStart="20dp"
+                        android:background="@null"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/html"
+                        android:scaleType="centerCrop"
+                        android:layout_gravity="center"/>
+                    <ImageButton
+                        android:id="@+id/accessory"
+                        android:layout_marginStart="20dp"
+                        android:background="@null"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/accessory"
+                        android:scaleType="centerCrop"
+                        android:layout_gravity="center"/>
+
+                </LinearLayout>
+                <ImageButton
+                    android:id="@+id/add"
+                    android:layout_marginStart="20dp"
+                    android:background="@null"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/add"
+                    android:scaleType="centerCrop"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"/>
+            </RelativeLayout>
+
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-                <ImageButton
-                    android:id="@+id/voice"
-                    android:background="@null"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@drawable/voice"
-                    android:scaleType="centerCrop"
-                    android:layout_gravity="center"/>
-                <ImageButton
-                    android:id="@+id/html"
-                    android:layout_marginStart="20dp"
-                    android:background="@null"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@drawable/html"
-                    android:scaleType="centerCrop"
-                    android:layout_gravity="center"/>
-                <ImageButton
-                    android:id="@+id/accessory"
-                    android:layout_marginStart="20dp"
-                    android:background="@null"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:src="@drawable/accessory"
-                    android:scaleType="centerCrop"
-                    android:layout_gravity="center"/>
+                android:id="@+id/bottomBar"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:orientation="vertical">
 
             </LinearLayout>
-            <ImageButton
-                android:id="@+id/add"
-                android:layout_marginStart="20dp"
-                android:background="@null"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:src="@drawable/add"
-                android:scaleType="centerCrop"
-                android:layout_centerVertical="true"
-                android:layout_alignParentEnd="true"/>
-        </RelativeLayout>
+        </LinearLayout>
     </androidx.cardview.widget.CardView>
-</RelativeLayout>
+</LinearLayout>

@@ -2,37 +2,25 @@ package com.edu.cdp.ui.dialog;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -52,21 +40,19 @@ import com.edu.cdp.bean.Constants;
 import com.edu.cdp.bean.Contact;
 import com.edu.cdp.custom.CircleOnlineAvatar;
 import com.edu.cdp.custom.SearchAnimationButton;
-import com.edu.cdp.model.manager.ModelManager;
 import com.edu.cdp.net.okhttp.OkHttpUtils;
+import com.edu.cdp.net.okhttp.UploadRequestBody;
 import com.edu.cdp.request.SEmail;
 import com.edu.cdp.response.User;
 import com.edu.cdp.ui.popupwindow.SearchUserPop;
 import com.edu.cdp.ui.popupwindow.UInfoPop;
 import com.edu.cdp.utils.AdapterList;
-import com.edu.cdp.utils.GsonUtil;
+import com.edu.cdp.utils.KeyboardUtils;
 import com.edu.cdp.utils.SoftKeyBoardListener;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class WEmailDialog extends BaseDialog {
     private Account account;
@@ -79,11 +65,13 @@ public class WEmailDialog extends BaseDialog {
     private ImageButton accessory;
     private ImageButton voice;
     private ImageButton add;
+    private LinearLayout bottomBar;
     private AdapterList<Contact> contacts;
     private boolean AddOnClick = false;
     private boolean AddOpen = false;
     private SEmail sEmail;
     private LoadingDialog loadingDialog;
+    private ValueAnimator bottomBarValueAnimator;
 
     public WEmailDialog(@NonNull Context context, Account account) {
         super(context);
@@ -135,6 +123,7 @@ public class WEmailDialog extends BaseDialog {
         accessory = findViewById(R.id.accessory);
         voice = findViewById(R.id.voice);
         add = findViewById(R.id.add);
+        bottomBar = findViewById(R.id.bottomBar);
 
         Glide.with(context)
                 .load(account.getLocalUser().getAvatar())
@@ -206,6 +195,8 @@ public class WEmailDialog extends BaseDialog {
                                         container.setBackground(null);
                                         search.reset();
                                         username.setText("");
+                                        username.clearFocus();
+                                        KeyboardUtils.hideKeyboard(context, username);
                                     }
 
                                     @Override
@@ -239,6 +230,7 @@ public class WEmailDialog extends BaseDialog {
                                     public void onAnimationEnd(Animator animation) {
                                         super.onAnimationEnd(animation);
                                         AddOnClick = false;
+                                        KeyboardUtils.showKeyboard(context, username);
                                     }
 
                                     @Override
@@ -387,13 +379,142 @@ public class WEmailDialog extends BaseDialog {
 
 
         html.setOnClickListener(v -> {
+            KeyboardUtils.hideKeyboard(context, controlBar);
+            addView(R.layout.html_d_layout, new ViewAddListener() {
+                @Override
+                public void InitView(View view) {
+
+                }
+
+                @Override
+                public void InitEvent(View view) {
+
+                }
+            });
+            if (!bottomBarIsOPen()) openBottomBar();
         });
         accessory.setOnClickListener(v -> {
+            KeyboardUtils.hideKeyboard(context, controlBar);
+            addView(R.layout.accessory_d_layout, new ViewAddListener() {
+                @Override
+                public void InitView(View view) {
+
+                }
+
+                @Override
+                public void InitEvent(View view) {
+
+                }
+            });
+            if (!bottomBarIsOPen()) openBottomBar();
         });
         voice.setOnClickListener(v -> {
+            KeyboardUtils.hideKeyboard(context, controlBar);
+            addView(R.layout.voice_d_layout, new ViewAddListener() {
+                @Override
+                public void InitView(View view) {
+
+                }
+
+                @Override
+                public void InitEvent(View view) {
+
+                }
+            });
+            if (!bottomBarIsOPen()) openBottomBar();
         });
         add.setOnClickListener(v -> {
+            KeyboardUtils.hideKeyboard(context, controlBar);
+            openOrCloseBottomBar();
         });
+
+
+        SoftKeyBoardListener.setListener((Activity) context, new SoftKeyBoardListener.OnSoftKeyBoardChangeListener() {
+            @Override
+            public void keyBoardShow(int height) {
+                closeBottomBar();
+            }
+
+            @Override
+            public void keyBoardHide(int height) {
+                closeBottomBar();
+            }
+        });
+    }
+
+    /**
+     * 替换view
+     */
+    private void addView(int layout_id, ViewAddListener viewAddListener) {
+        View view = LayoutInflater.from(context).inflate(layout_id, null, false);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        );
+        view.setLayoutParams(params);
+        if (viewAddListener != null) {
+            viewAddListener.InitEvent(view);
+            viewAddListener.InitEvent(view);
+        }
+        bottomBar.removeAllViews();
+        bottomBar.addView(view);
+    }
+
+
+    private void openOrCloseBottomBar() {
+        if (bottomBarIsOPen()) closeBottomBar();
+        else openBottomBar();
+    }
+
+    private boolean bottomBarIsOPen() {
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) controlBar.getLayoutParams();
+        return params.bottomMargin == 0;
+    }
+
+    /**
+     * 打开底部操作面板
+     *
+     * @return
+     */
+    private void openBottomBar() {
+        int px = dip2px(200);
+        if (!bottomBarIsOPen()) {
+            if (bottomBarValueAnimator == null) {
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) controlBar.getLayoutParams();
+                bottomBarValueAnimator = ValueAnimator.ofInt(-px, 0);
+                bottomBarValueAnimator.setDuration(200);
+                bottomBarValueAnimator.addUpdateListener(animation -> {
+                    params.bottomMargin = (int) animation.getAnimatedValue();
+                    controlBar.setLayoutParams(params);
+                });
+            } else if (!bottomBarValueAnimator.isRunning()) {
+                bottomBarValueAnimator.setIntValues(-px, 0);
+            }
+            bottomBarValueAnimator.start();
+        }
+    }
+
+    /**
+     * 关闭底部操作面板
+     *
+     * @return
+     */
+    private void closeBottomBar() {
+        int px = dip2px(200);
+        if (bottomBarIsOPen()) {
+            if (bottomBarValueAnimator == null) {
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) controlBar.getLayoutParams();
+                bottomBarValueAnimator = ValueAnimator.ofInt(0, -px);
+                bottomBarValueAnimator.setDuration(200);
+                bottomBarValueAnimator.addUpdateListener(animation -> {
+                    params.bottomMargin = (int) animation.getAnimatedValue();
+                    controlBar.setLayoutParams(params);
+                });
+            } else if (!bottomBarValueAnimator.isRunning()) {
+                bottomBarValueAnimator.setIntValues(0, -px);
+            }
+            bottomBarValueAnimator.start();
+        }
     }
 
 
@@ -402,30 +523,36 @@ public class WEmailDialog extends BaseDialog {
         return (int) (dpValue * scale + 0.5f);
     }
 
-
     @Override
     public boolean onKeyDown(int keyCode, @NonNull KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && sEmail.getContent() != null || sEmail.getTitle() != null) {
-            ConfirmDialog confirmDialog = new ConfirmDialog(context);
-            confirmDialog.showDialog();
-            confirmDialog.setTitle("提示");
-            confirmDialog.setContent("是否要保存草稿");
-            confirmDialog.setCancelable(true);
-            confirmDialog.setCanceledOnTouchOutside(false);
-            confirmDialog.setCancelClickListener(confirmDialog12 -> {
-                confirmDialog12.dismissDialog();
+        closeBottomBar();
+        JSONObject json = JSONObject.parseObject(sEmail.getContent());
+        String text = json.getString("text");
+
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (!sEmail.getTitle().equals("") || !text.equals("")) {
+                ConfirmDialog confirmDialog = new ConfirmDialog(context);
+                confirmDialog.showDialog();
+                confirmDialog.setTitle("提示");
+                confirmDialog.setContent("是否要保存草稿");
+                confirmDialog.setCancelable(true);
+                confirmDialog.setCanceledOnTouchOutside(false);
+                confirmDialog.setCancelClickListener(confirmDialog12 -> {
+                    confirmDialog12.dismissDialog();
+                    dismissDialog();
+                });
+                confirmDialog.setConfirmClickListener(confirmDialog1 -> {
+                    confirmDialog.dismissDialog();
+                    saveDraft();
+                });
+            } else {
                 dismissDialog();
-            });
-            confirmDialog.setConfirmClickListener(confirmDialog1 -> {
-                confirmDialog.dismissDialog();
-                saveDraft();
-            });
+            }
         } else {
             dismissDialog();
         }
         return super.onKeyDown(keyCode, event);
     }
-
 
     private void saveDraft() {
 //
@@ -437,7 +564,7 @@ public class WEmailDialog extends BaseDialog {
 //                "senduserid": 0,
 //                "title": "string"
 //        }
-        if(loadingDialog==null)loadingDialog = new LoadingDialog(context);
+        if (loadingDialog == null) loadingDialog = new LoadingDialog(context);
         loadingDialog.showDialog();
         //处理内容格式
         dealContentFormat();
@@ -447,46 +574,81 @@ public class WEmailDialog extends BaseDialog {
         JSONObject json = JSONObject.parseObject(sEmail.getContent());
         String voicePath = json.getString("voice");
         if (voicePath != null && !voicePath.equals("")) {
-            Map<String, String> headers = new HashMap<>();
-            headers.put("uuid", account.getLocalUser().getUUID());
-
-
-            handler.sendEmptyMessage(0);
+            saveVoice(voicePath);
+        } else {
+            save();
         }
     }
 
-    //上传草稿
-    @SuppressLint("HandlerLeak")
-    Handler handler = new Handler(){
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            super.handleMessage(msg);
-            //设置请求头
-            Map<String, String> headers = new HashMap<>();
-            headers.put("uuid", account.getLocalUser().getUUID());
-            OkHttpUtils.POST(Constants.SAVE_DRAFT, headers, sEmail, new OkHttpUtils.Jcallback() {
-                @Override
-                public void onFailure() {
-                    loadingDialog.dismissDialog();
-                }
+    private void saveVoice(String voicePath) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("uuid", account.getLocalUser().getUUID());
+        OkHttpUtils.UPLOAD(Constants.SAVE_VOICE, voicePath, headers, "voice", new OkHttpUtils.JUploadCallback1() {
+            @Override
+            public boolean onResponseAsync(JSONObject response) {
+                return false;
+            }
 
-                @Override
-                public boolean onResponseAsync(JSONObject response) {
-                    int code = response.getInteger("code");
-                    if (code == 400) {
-                        System.out.println(response.getString("data"));
-                        return true;
-                    }
-                    return false;
-                }
+            @Override
+            public void onFailure(String msg) {
 
-                @Override
-                public void onSuccess() {
-                    Toast.makeText(context, "保存成功", Toast.LENGTH_SHORT).show();
-                    loadingDialog.dismissDialog();
-                    dismissDialog();
+            }
+
+            @Override
+            public void onSuccess() {
+
+            }
+        }, new UploadRequestBody.JUploadCallback2() {
+            @Override
+            public void onUploadStart(long max, long progress) {
+
+            }
+
+            @Override
+            public void onUploadUpdate(long max, long progress) {
+
+            }
+
+            @Override
+            public void onUploadComplete(long max, long progress) {
+
+            }
+        });
+    }
+
+    private void save() {
+        //设置请求头
+        Map<String, String> headers = new HashMap<>();
+        headers.put("uuid", account.getLocalUser().getUUID());
+        OkHttpUtils.POST(Constants.SAVE_DRAFT, headers, sEmail, new OkHttpUtils.Jcallback() {
+            @Override
+            public void onFailure() {
+                loadingDialog.dismissDialog();
+            }
+
+            @Override
+            public boolean onResponseAsync(JSONObject response) {
+                int code = response.getInteger("code");
+                if (code == 400) {
+                    System.out.println(response.getString("data"));
+                    return true;
                 }
-            });
-        }
-    };
+                return false;
+            }
+
+            @Override
+            public void onSuccess() {
+                Toast.makeText(context, "保存成功", Toast.LENGTH_SHORT).show();
+                loadingDialog.dismissDialog();
+                dismissDialog();
+            }
+        });
+    }
+
+
+    private interface ViewAddListener {
+        void InitView(View view);
+
+        void InitEvent(View view);
+    }
 }
