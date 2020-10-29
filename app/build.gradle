@@ -13,6 +13,11 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
     }
 
     buildTypes {
@@ -29,7 +34,21 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    ndkVersion '21.0.6113669'
+
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version "3.10.2"
+        }
+    }
+
+
+    sourceSets.main {
+        jniLibs.srcDirs = ['src/main/jniLibs']
+    }
+
+
 }
 
 dependencies {
@@ -43,7 +62,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
 
 
-    implementation 'org.greenrobot:eventbus:3.1.1'
+    implementation 'org.greenrobot:eventbus:3.2.0'
     //noinspection GradleCompatible
     implementation 'com.android.support:recyclerview-v7:28.0.0'
 
@@ -80,4 +99,7 @@ dependencies {
     implementation 'com.just.agentweb:agentweb-androidx:4.1.4' // (必选)
     implementation 'com.just.agentweb:filechooser-androidx:4.1.4'// (可选)
 //    implementation 'com.download.library:Downloader:4.1.4'// (可选)
+
+    //Ffmpeg
+    implementation 'com.writingminds:FFmpegAndroid:0.3.2'
 }

@@ -6,14 +6,20 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -21,6 +27,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,6 +40,7 @@ import com.bumptech.glide.request.transition.Transition;
 import com.edu.cdp.R;
 import com.edu.cdp.adapter.BaseViewHolder;
 import com.edu.cdp.adapter.JAdapter;
+import com.edu.cdp.base.BaseActivity;
 import com.edu.cdp.base.BaseDialog;
 import com.edu.cdp.base.BasePopupWindow;
 import com.edu.cdp.bean.Account;
@@ -40,6 +48,7 @@ import com.edu.cdp.bean.Constants;
 import com.edu.cdp.bean.Contact;
 import com.edu.cdp.custom.CircleOnlineAvatar;
 import com.edu.cdp.custom.SearchAnimationButton;
+import com.edu.cdp.custom.SendVoiceView;
 import com.edu.cdp.net.okhttp.OkHttpUtils;
 import com.edu.cdp.net.okhttp.UploadRequestBody;
 import com.edu.cdp.request.SEmail;
@@ -50,6 +59,7 @@ import com.edu.cdp.utils.AdapterList;
 import com.edu.cdp.utils.KeyboardUtils;
 import com.edu.cdp.utils.SoftKeyBoardListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -312,6 +322,46 @@ public class WEmailDialog extends BaseDialog {
         contacts = new AdapterList<>();
         contacts.relevantAdapter(contactJAdapter.adapter);
         contacts.add(new Contact(null, false));
+
+
+        //添加底部控制栏view
+        //语音
+        addView(R.layout.voice_d_layout, new ViewAddListener() {
+            @Override
+            public void InitView(View view) {
+                SendVoiceView send_voice_view = view.findViewById(R.id.send_voice_view);
+            }
+
+            @Override
+            public void InitEvent(View view) {
+
+            }
+        });
+        //html
+        addView(R.layout.html_d_layout,  new ViewAddListener() {
+            @Override
+            public void InitView(View view) {
+
+            }
+
+            @Override
+            public void InitEvent(View view) {
+
+            }
+        });
+        //附件
+        addView(R.layout.accessory_d_layout, new ViewAddListener() {
+            @Override
+            public void InitView(View view) {
+
+            }
+
+            @Override
+            public void InitEvent(View view) {
+
+            }
+        });
+
     }
 
 
@@ -380,48 +430,18 @@ public class WEmailDialog extends BaseDialog {
 
         html.setOnClickListener(v -> {
             KeyboardUtils.hideKeyboard(context, controlBar);
-            addView(R.layout.html_d_layout, new ViewAddListener() {
-                @Override
-                public void InitView(View view) {
-
-                }
-
-                @Override
-                public void InitEvent(View view) {
-
-                }
-            });
             if (!bottomBarIsOPen()) openBottomBar();
+            scrollToView(1);
         });
         accessory.setOnClickListener(v -> {
             KeyboardUtils.hideKeyboard(context, controlBar);
-            addView(R.layout.accessory_d_layout, new ViewAddListener() {
-                @Override
-                public void InitView(View view) {
-
-                }
-
-                @Override
-                public void InitEvent(View view) {
-
-                }
-            });
             if (!bottomBarIsOPen()) openBottomBar();
+            scrollToView(2);
         });
         voice.setOnClickListener(v -> {
             KeyboardUtils.hideKeyboard(context, controlBar);
-            addView(R.layout.voice_d_layout, new ViewAddListener() {
-                @Override
-                public void InitView(View view) {
-
-                }
-
-                @Override
-                public void InitEvent(View view) {
-
-                }
-            });
             if (!bottomBarIsOPen()) openBottomBar();
+            scrollToView(0);
         });
         add.setOnClickListener(v -> {
             KeyboardUtils.hideKeyboard(context, controlBar);
@@ -442,8 +462,13 @@ public class WEmailDialog extends BaseDialog {
         });
     }
 
+    //替换view时的动画
+    private ValueAnimator translationAnimator;
+    //每个子布局宽度
+    private int width;
+
     /**
-     * 替换view
+     * 添加view
      */
     private void addView(int layout_id, ViewAddListener viewAddListener) {
         View view = LayoutInflater.from(context).inflate(layout_id, null, false);
@@ -451,21 +476,87 @@ public class WEmailDialog extends BaseDialog {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT
         );
-        view.setLayoutParams(params);
+        if(width==0){
+            //获得每个子布局的宽度
+            bottomBar.post(() -> {
+                width = bottomBar.getWidth();
+                params.width = width;
+                view.setLayoutParams(params);
+                //添加试图到布局之中
+                bottomBar.addView(view);
+            });
+        } else {
+            params.width = width;
+            view.setLayoutParams(params);
+            //添加试图到布局之中
+            bottomBar.addView(view);
+        }
+
+        //初始化view
         if (viewAddListener != null) {
-            viewAddListener.InitEvent(view);
+            viewAddListener.InitView(view);
             viewAddListener.InitEvent(view);
         }
-        bottomBar.removeAllViews();
-        bottomBar.addView(view);
+    }
+
+    /**
+     * 滑动到指定view
+     * @param position
+     */
+    private void scrollToView(int position){
+        //获得所有子布局个数
+        int total = bottomBar.getChildCount();
+        //判断total是否大于position
+        if((total-1)<position)return;
+
+
+        //真正执行动画的地方
+
+        View view = bottomBar.getChildAt(0);
+        int leftMargin = view.getLeft();//0           -1080
+        int distance = width*position;  //1080        0
+
+        if(leftMargin<distance)executeScrollToView(leftMargin,-distance);
+        else executeScrollToView(leftMargin,distance);
+
+
+    }
+
+    /**
+     * 执行动画
+     * @param start 上一个view0左边距
+     * @param end 结束位置view0左边距
+     */
+    private void executeScrollToView(int start,int end){
+        View view = bottomBar.getChildAt(0);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) view.getLayoutParams();
+
+        translationAnimator = ValueAnimator.ofInt(start,end);
+        translationAnimator.addUpdateListener(animation -> {
+            int value  = (int) animation.getAnimatedValue();
+            System.out.println("value:"+value);
+            params.leftMargin = value;
+            view.setLayoutParams(params);
+        });
+        translationAnimator.setDuration(200);
+        translationAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+
+        if(!translationAnimator.isRunning())translationAnimator.start();
     }
 
 
+    /**
+     * 打开或者关闭底部控制栏
+     */
     private void openOrCloseBottomBar() {
         if (bottomBarIsOPen()) closeBottomBar();
         else openBottomBar();
     }
 
+    /**
+     * 判断底部控制栏是否已经打开
+     * @return
+     */
     private boolean bottomBarIsOPen() {
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) controlBar.getLayoutParams();
         return params.bottomMargin == 0;

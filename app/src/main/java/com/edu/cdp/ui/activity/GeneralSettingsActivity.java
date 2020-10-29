@@ -95,6 +95,8 @@ public class GeneralSettingsActivity extends BaseActivity<ActivityGeneralSetting
             if (GeneralSettingsActivity.this.RequestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) && GeneralSettingsActivity.this.RequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 String saveDir = getFilesDir().toString() + File.separator + "voice" + File.separator;
                 DataCleanManager.cleanCustomCache(saveDir);
+                String saveDir1 = getFilesDir().toString() + File.separator + "record" + File.separator;
+                DataCleanManager.cleanCustomCache(saveDir1);
                 Toast.makeText(GeneralSettingsActivity.this, "清除成功", Toast.LENGTH_SHORT).show();
             }
         }));
