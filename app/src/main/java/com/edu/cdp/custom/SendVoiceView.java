@@ -56,12 +56,14 @@ public class SendVoiceView extends View implements View.OnTouchListener {
 
 
     //画录音圆弧需要的东西
-    private int[] circleColor = new int[]{Color.parseColor("#d9f7be"), Color.parseColor("#f6ffed")};
+    private int[] circleColor = new int[]{Color.parseColor("#95de64"), Color.parseColor("#d9f7be")};
     private Paint circlePaint1;
     private Paint circlePaint2;
     private int circleRadius1 = 0;
     private int circleRadius2 = 0;
 
+    //监听器
+    private Listener listener;
 
     public SendVoiceView(Context context) {
         this(context, null);
@@ -76,6 +78,12 @@ public class SendVoiceView extends View implements View.OnTouchListener {
         init(context, attrs);
     }
 
+    /**
+     * 设置监听器
+     */
+    public void setListener(Listener listener) {
+        this.listener = listener;
+    }
 
     /**
      * 初始化控件
@@ -282,7 +290,6 @@ public class SendVoiceView extends View implements View.OnTouchListener {
         animation1.setRepeatMode(ValueAnimator.REVERSE);
         animation1.addUpdateListener(animation -> {
             circleRadius1 = (int) animation.getAnimatedValue();
-            System.out.println("circleRadius1:" + circleRadius1);
             invalidate();
         });
         animation1.addListener(new AnimatorListenerAdapter() {
@@ -301,7 +308,6 @@ public class SendVoiceView extends View implements View.OnTouchListener {
         animation2.setRepeatMode(ValueAnimator.REVERSE);
         animation2.addUpdateListener(animation -> {
             circleRadius2 = (int) animation.getAnimatedValue();
-            System.out.println("circleRadius2:" + circleRadius2);
             invalidate();
         });
         animation2.addListener(new AnimatorListenerAdapter() {
@@ -333,7 +339,6 @@ public class SendVoiceView extends View implements View.OnTouchListener {
 
     //录音对象
     private MediaRecorder mMediaRecorder;
-
     /**
      * 录制音频 保存到 record文件夹下面
      */
@@ -359,6 +364,7 @@ public class SendVoiceView extends View implements View.OnTouchListener {
                 }
                 mMediaRecorder.setOutputFile(filePath);
                 mMediaRecorder.prepare();
+                mMediaRecorder.setOnInfoListener((mr, what, extra) -> System.out.println("录音:"+what+"   extra:"+extra));
                 mMediaRecorder.start();
                 isRecording = true;
             } catch (Exception e) {
@@ -376,18 +382,19 @@ public class SendVoiceView extends View implements View.OnTouchListener {
         if (isRecording) {
             try {
                 mMediaRecorder.stop();
+                mMediaRecorder.reset();
                 mMediaRecorder.release();
-                ;
                 mMediaRecorder = null;
+                if(listener!=null)listener.recordSuccess(filePath);
             } catch (Exception e) {
                 mMediaRecorder.reset();
                 mMediaRecorder.release();
-                ;
                 mMediaRecorder = null;
                 File file = new File(filePath);
                 if (file.exists()) file.delete();
-                filePath = "";
+                if(listener!=null)listener.recordFailure();
             }
+            filePath = "";
             isRecording = false;
         }
     }
@@ -398,5 +405,7 @@ public class SendVoiceView extends View implements View.OnTouchListener {
      */
     public interface Listener {
         void recordSuccess(String path);
+
+        void recordFailure();
     }
 }

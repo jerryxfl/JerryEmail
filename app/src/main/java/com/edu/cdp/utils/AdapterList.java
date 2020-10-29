@@ -34,14 +34,14 @@ public class AdapterList<T> extends ArrayList<T> {
     @Override
     public boolean add(T t) {
         super.add(t);
-        adapter.notifyItemChanged(0);
+        adapter.notifyItemInserted(0);
         return true;
     }
 
     @Override
     public void add(int index, T element) {
         super.add(index, element);
-        adapter.notifyItemChanged(index);
+        adapter.notifyItemInserted(index);
     }
 
     @Override
@@ -49,13 +49,16 @@ public class AdapterList<T> extends ArrayList<T> {
         T element = get(index);
         super.remove(index);
         adapter.notifyItemRemoved(index);
+        adapter.notifyItemRangeChanged(0,size()-1);
         return element;
     }
 
     @Override
     public boolean remove(@Nullable Object o) {
+        int index = indexOf(o);
         super.remove(o);
-        adapter.notifyItemRemoved(indexOf(o));
+        adapter.notifyItemRemoved(index);
+        adapter.notifyItemRangeChanged(0,size()-1);
         return true;
     }
 

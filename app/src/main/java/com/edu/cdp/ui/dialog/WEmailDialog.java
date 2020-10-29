@@ -22,7 +22,10 @@ import android.view.animation.BounceInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -56,9 +59,11 @@ import com.edu.cdp.response.User;
 import com.edu.cdp.ui.popupwindow.SearchUserPop;
 import com.edu.cdp.ui.popupwindow.UInfoPop;
 import com.edu.cdp.utils.AdapterList;
+import com.edu.cdp.utils.AudioPlayUtils;
 import com.edu.cdp.utils.KeyboardUtils;
 import com.edu.cdp.utils.SoftKeyBoardListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -329,7 +334,73 @@ public class WEmailDialog extends BaseDialog {
         addView(R.layout.voice_d_layout, new ViewAddListener() {
             @Override
             public void InitView(View view) {
+                //数据源
+                AdapterList<String> filePathList = new AdapterList<>();
+
                 SendVoiceView send_voice_view = view.findViewById(R.id.send_voice_view);
+                RecyclerView filesRecycler = view.findViewById(R.id.filesRecycler);
+
+                //设置recyclerview
+                filesRecycler.setHasFixedSize(true);
+                LinearLayoutManager layoutManager = new LinearLayoutManager(context);
+                layoutManager.setOrientation(RecyclerView.HORIZONTAL);
+                filesRecycler.setLayoutManager(layoutManager);
+
+                JAdapter<String> fileAdapter = new JAdapter<>(
+                        context,
+                        filesRecycler,
+                        new int[]{R.layout.voice_recycler_layout},
+                        new JAdapter.DataListener<String>() {
+                            @Override
+                            public void initItem(BaseViewHolder holder, int position, List<String> data) {
+                                String path = data.get(position);
+                                String fileName = path.substring(path.lastIndexOf("/") + 1);
+                                if (fileName.length() > 8)
+                                    fileName = fileName.substring(fileName.length() - 8);
+
+                                RelativeLayout item = holder.findViewById(R.id.item);
+                                TextView name = holder.findViewById(R.id.name);
+                                ImageView delete = holder.findViewById(R.id.delete);
+                                name.setText(fileName);
+                                item.setOnClickListener(v -> {
+                                    try {
+                                        AudioPlayUtils.getInstance().play(path);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                });
+                                delete.setOnClickListener(v -> {
+                                    //删除录音
+                                    filePathList.remove(position);
+                                });
+                            }
+
+                            @Override
+                            public void updateItem(BaseViewHolder holder, int position, List<String> data, String tag) {
+
+                            }
+
+                            @Override
+                            public int getItemViewType(int position, List<String> data) {
+                                return 0;
+                            }
+                        }
+                );
+
+                filePathList.relevantAdapter(fileAdapter.adapter);
+                //设置录音监听器
+                send_voice_view.setListener(new SendVoiceView.Listener() {
+                    @Override
+                    public void recordSuccess(String path) {
+                        System.out.println("音频:" + path);
+                        filePathList.add(0, path);
+                    }
+
+                    @Override
+                    public void recordFailure() {
+                    }
+                });
+
             }
 
             @Override
@@ -338,7 +409,7 @@ public class WEmailDialog extends BaseDialog {
             }
         });
         //html
-        addView(R.layout.html_d_layout,  new ViewAddListener() {
+        addView(R.layout.html_d_layout, new ViewAddListener() {
             @Override
             public void InitView(View view) {
 
@@ -361,9 +432,7 @@ public class WEmailDialog extends BaseDialog {
 
             }
         });
-
     }
-
 
     public void addReceivers(Contact contact) {
         contacts.add(contacts.size() - 1, contact);
@@ -476,7 +545,7 @@ public class WEmailDialog extends BaseDialog {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT
         );
-        if(width==0){
+        if (width == 0) {
             //获得每个子布局的宽度
             bottomBar.post(() -> {
                 width = bottomBar.getWidth();
@@ -501,47 +570,47 @@ public class WEmailDialog extends BaseDialog {
 
     /**
      * 滑动到指定view
+     *
      * @param position
      */
-    private void scrollToView(int position){
+    private void scrollToView(int position) {
         //获得所有子布局个数
         int total = bottomBar.getChildCount();
         //判断total是否大于position
-        if((total-1)<position)return;
+        if ((total - 1) < position) return;
 
 
         //真正执行动画的地方
 
         View view = bottomBar.getChildAt(0);
         int leftMargin = view.getLeft();//0           -1080
-        int distance = width*position;  //1080        0
+        int distance = width * position;  //1080        0
 
-        if(leftMargin<distance)executeScrollToView(leftMargin,-distance);
-        else executeScrollToView(leftMargin,distance);
+        if (leftMargin < distance) executeScrollToView(leftMargin, -distance);
+        else executeScrollToView(leftMargin, distance);
 
 
     }
 
     /**
      * 执行动画
+     *
      * @param start 上一个view0左边距
-     * @param end 结束位置view0左边距
+     * @param end   结束位置view0左边距
      */
-    private void executeScrollToView(int start,int end){
+    private void executeScrollToView(int start, int end) {
         View view = bottomBar.getChildAt(0);
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) view.getLayoutParams();
 
-        translationAnimator = ValueAnimator.ofInt(start,end);
+        translationAnimator = ValueAnimator.ofInt(start, end);
         translationAnimator.addUpdateListener(animation -> {
-            int value  = (int) animation.getAnimatedValue();
-            System.out.println("value:"+value);
-            params.leftMargin = value;
+            params.leftMargin = (int) animation.getAnimatedValue();
             view.setLayoutParams(params);
         });
         translationAnimator.setDuration(200);
         translationAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
 
-        if(!translationAnimator.isRunning())translationAnimator.start();
+        if (!translationAnimator.isRunning()) translationAnimator.start();
     }
 
 
@@ -555,6 +624,7 @@ public class WEmailDialog extends BaseDialog {
 
     /**
      * 判断底部控制栏是否已经打开
+     *
      * @return
      */
     private boolean bottomBarIsOPen() {

@@ -42,8 +42,7 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
 
 
     private String url;
-    private final boolean mPlayStatus = false;
-    private byte[] mFft,mLastFft;
+    private byte[] mFft;
     private MediaPlayer mMediaPlayer;
     private Visualizer visualizer;
     private Random random;
@@ -535,6 +534,7 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
             mPathPaint.setStyle(Paint.Style.STROKE);
             mPathPaint.setStrokeWidth(w2 / 20);
             mPathPaint.setStrokeCap(Paint.Cap.ROUND);
+            mPathPaint.setColor(Color.WHITE);
 
             for (int i = 1; i < 13; i++) {
                 if (mFft[i] > h / 2 || mFft[i] == 0 || mFft[i] < 0)
