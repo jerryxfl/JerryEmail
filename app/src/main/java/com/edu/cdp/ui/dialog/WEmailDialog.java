@@ -5,6 +5,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.Editable;
@@ -52,10 +54,12 @@ import com.edu.cdp.bean.Contact;
 import com.edu.cdp.custom.CircleOnlineAvatar;
 import com.edu.cdp.custom.SearchAnimationButton;
 import com.edu.cdp.custom.SendVoiceView;
+import com.edu.cdp.custom.VoiceView;
 import com.edu.cdp.net.okhttp.OkHttpUtils;
 import com.edu.cdp.net.okhttp.UploadRequestBody;
 import com.edu.cdp.request.SEmail;
 import com.edu.cdp.response.User;
+import com.edu.cdp.ui.activity.EmailActivity;
 import com.edu.cdp.ui.popupwindow.SearchUserPop;
 import com.edu.cdp.ui.popupwindow.UInfoPop;
 import com.edu.cdp.utils.AdapterList;
@@ -66,8 +70,10 @@ import com.edu.cdp.utils.SoftKeyBoardListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class WEmailDialog extends BaseDialog {
     private Account account;
@@ -181,7 +187,7 @@ public class WEmailDialog extends BaseDialog {
                     LinearLayout container = holder.findViewById(R.id.container);
 
                     avatar.setOnClickListener(v -> {
-                        //添加新的接收方
+                        //添加新的邮件接收方
                         if (!AddOnClick) {
                             if (AddOpen) {
                                 AddOpen = false;
@@ -262,7 +268,7 @@ public class WEmailDialog extends BaseDialog {
                         }
                     });
 
-
+                    //搜索用户
                     search.setOnClickListener(v -> {
                         String uNameText = username.getText().toString().trim();
                         if (uNameText.equals("")) {
@@ -351,28 +357,57 @@ public class WEmailDialog extends BaseDialog {
                         filesRecycler,
                         new int[]{R.layout.voice_recycler_layout},
                         new JAdapter.DataListener<String>() {
+                            @RequiresApi(api = Build.VERSION_CODES.N)
                             @Override
                             public void initItem(BaseViewHolder holder, int position, List<String> data) {
                                 String path = data.get(position);
-                                String fileName = path.substring(path.lastIndexOf("/") + 1);
-                                if (fileName.length() > 8)
-                                    fileName = fileName.substring(fileName.length() - 8);
 
                                 RelativeLayout item = holder.findViewById(R.id.item);
                                 TextView name = holder.findViewById(R.id.name);
                                 ImageView delete = holder.findViewById(R.id.delete);
-                                name.setText(fileName);
-                                item.setOnClickListener(v -> {
-                                    try {
-                                        AudioPlayUtils.getInstance().play(path);
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                });
-                                delete.setOnClickListener(v -> {
-                                    //删除录音
-                                    filePathList.remove(position);
-                                });
+                                ImageView img = holder.findViewById(R.id.img);
+
+                                if (path.equals("")) {
+                                    //添加本地文件
+                                    name.setText("");
+                                    delete.setVisibility(View.GONE);
+                                    img.setImageBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.squre_add));
+                                    item.setOnClickListener(v -> {
+                                        //打开本地文件选择页面,添加本地文件
+
+                                    });
+                                } else {
+                                    //刚录好的音频文件
+                                    delete.setVisibility(View.VISIBLE);
+
+                                    img.setImageBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.mp3));
+                                    String fileName = path.substring(path.lastIndexOf("/") + 1);
+                                    if (fileName.length() > 8)
+                                        fileName = fileName.substring(fileName.length() - 8);
+                                    name.setText(fileName);
+                                    item.setOnClickListener(v -> {
+                                        try {
+                                            AudioPlayUtils.getInstance().play(path);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    });
+                                    delete.setOnClickListener(v -> {
+                                        //删除录音
+                                        AudioPlayUtils.getInstance().stop();
+                                        filePathList.remove(position);
+                                        JSONObject json = JSONObject.parseObject(sEmail.getContent());
+
+                                        Iterator<String> iterator = json.keySet().iterator();
+                                        if (iterator.hasNext()) {
+                                            String key = iterator.next();
+                                            if (json.getString(key).equals(path)) {
+                                                json.remove(key);
+                                            }
+                                        }
+                                        sEmail.setContent(json.toJSONString());
+                                    });
+                                }
                             }
 
                             @Override
@@ -388,12 +423,16 @@ public class WEmailDialog extends BaseDialog {
                 );
 
                 filePathList.relevantAdapter(fileAdapter.adapter);
+                filePathList.add(0, "");
                 //设置录音监听器
                 send_voice_view.setListener(new SendVoiceView.Listener() {
                     @Override
                     public void recordSuccess(String path) {
-                        System.out.println("音频:" + path);
                         filePathList.add(0, path);
+                        JSONObject json = JSONObject.parseObject(sEmail.getContent());
+                        json.put("voice" + (filePathList.size() - 1), path);
+                        sEmail.setContent(json.toJSONString());
+                        System.out.println("json" + json.toJSONString());
                     }
 
                     @Override
@@ -716,7 +755,6 @@ public class WEmailDialog extends BaseDialog {
     }
 
     private void saveDraft() {
-//
 //        {
 //            "accessory": "string",
 //                "content": "string",
@@ -732,11 +770,15 @@ public class WEmailDialog extends BaseDialog {
     }
 
     private void dealContentFormat() {
+        boolean saveVoice = false;
         JSONObject json = JSONObject.parseObject(sEmail.getContent());
-        String voicePath = json.getString("voice");
-        if (voicePath != null && !voicePath.equals("")) {
-            saveVoice(voicePath);
-        } else {
+        for (String key : json.keySet()) {
+            if (key.startsWith("voice")) {
+                saveVoice = true;
+                saveVoice(json.getString(key));
+            }
+        }
+        if(!saveVoice){
             save();
         }
     }
@@ -747,17 +789,32 @@ public class WEmailDialog extends BaseDialog {
         OkHttpUtils.UPLOAD(Constants.SAVE_VOICE, voicePath, headers, "voice", new OkHttpUtils.JUploadCallback1() {
             @Override
             public boolean onResponseAsync(JSONObject response) {
+                int code = response.getInteger("code");
+                if(code == 400){
+                    String data = response.getString("data");
+                    JSONObject json = JSONObject.parseObject(sEmail.getContent());
+                    Iterator<String> iterator = json.keySet().iterator();
+                    if (iterator.hasNext()) {
+                        String key = iterator.next();
+                        if (json.getString(key).equals(voicePath)) {
+                            json.put(key, data);
+                        }
+                    }
+                    sEmail.setContent(json.toJSONString());
+                    System.out.println("语音上传成功:"+JSONObject.parseObject(sEmail.getContent()).toJSONString());
+                    return true;
+                }
                 return false;
             }
 
             @Override
             public void onFailure(String msg) {
-
+                loadingDialog.dismissDialog();
             }
 
             @Override
             public void onSuccess() {
-
+                save();
             }
         }, new UploadRequestBody.JUploadCallback2() {
             @Override

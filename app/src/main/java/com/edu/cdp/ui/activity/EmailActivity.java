@@ -120,18 +120,10 @@ public class EmailActivity extends BaseActivity<ActivityEmailBinding> {
             //打开用户信息界面
 
         });
-//        binding.voiceview.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                RequestPermission(Manifest.permission.RECORD_AUDIO);
-//                binding.voiceview.playAudio();
-//            }
-//        });
     }
 
     @Override
     protected void onDestroy() {
-//        binding.voiceview.stopPlay();
         super.onDestroy();
     }
 

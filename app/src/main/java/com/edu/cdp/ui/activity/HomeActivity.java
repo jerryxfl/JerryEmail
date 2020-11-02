@@ -471,10 +471,10 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                     JSONObject json = JSONObject.parseObject(data);
                     LocalUser user = new LocalUser(
                             account.getLocalUser().getId(),
-                            account.getLocalUser().getUsername(),
-                            account.getLocalUser().getPassword(),
-                            account.getLocalUser().getNickname(),
-                            account.getLocalUser().getAvatar(),
+                            json.getString("username"),
+                            json.getString("password"),
+                            json.getString("nickname"),
+                            json.getString("avatar"),
                             json.getString("uuid"),
                             account.getLocalUser().isMainAccount()
                     );
@@ -507,7 +507,6 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
             @Override
             public boolean onResponseAsync(JSONObject response) {
                 int code = response.getInteger("code");
-                final String msg = response.getString("msg");
                 if (code == 400) {
                     List<User> data = GsonUtil.jsonToList(response.getString("data"), User.class);
                     final List<Contact> contacts = new ArrayList<Contact>();

@@ -23,18 +23,26 @@ public class AdapterList<T> extends ArrayList<T> {
         adapter.setData(this);
     }
 
+    //刷新所有数据
+    private void updateItem(int index){
+        if (index != size()) {
+            adapter.notifyItemRangeChanged(index, size() - index);
+        }
+    }
 
     @Override
     public T set(int index, T element) {
         super.set(index, element);
         adapter.notifyItemChanged(index);
+        updateItem(index);
         return element;
     }
 
     @Override
     public boolean add(T t) {
         super.add(t);
-        adapter.notifyItemInserted(0);
+        adapter.notifyItemInserted(size()-1);
+        updateItem(size()-1);
         return true;
     }
 
@@ -42,6 +50,7 @@ public class AdapterList<T> extends ArrayList<T> {
     public void add(int index, T element) {
         super.add(index, element);
         adapter.notifyItemInserted(index);
+        updateItem(index);
     }
 
     @Override
@@ -49,7 +58,7 @@ public class AdapterList<T> extends ArrayList<T> {
         T element = get(index);
         super.remove(index);
         adapter.notifyItemRemoved(index);
-        adapter.notifyItemRangeChanged(0,size()-1);
+        updateItem(index);
         return element;
     }
 
@@ -58,7 +67,7 @@ public class AdapterList<T> extends ArrayList<T> {
         int index = indexOf(o);
         super.remove(o);
         adapter.notifyItemRemoved(index);
-        adapter.notifyItemRangeChanged(0,size()-1);
+        updateItem(index);
         return true;
     }
 
@@ -78,7 +87,8 @@ public class AdapterList<T> extends ArrayList<T> {
     @Override
     public boolean addAll(int index, @NonNull Collection<? extends T> c) {
         super.addAll(index, c);
-        adapter.notifyDataSetChanged();
+        adapter.notifyItemInserted(index);
+        updateItem(index);
         return true;
     }
 

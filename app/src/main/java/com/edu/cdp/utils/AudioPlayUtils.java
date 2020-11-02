@@ -10,28 +10,32 @@ public class AudioPlayUtils {
     private MediaPlayer mMediaPlayer;
 
     public static synchronized AudioPlayUtils getInstance() {
-        if (INSTANCE == null){
+        if (INSTANCE == null) {
             INSTANCE = new AudioPlayUtils();
         }
         return INSTANCE;
     }
 
 
-
-    public AudioPlayUtils(){
+    public AudioPlayUtils() {
         mMediaPlayer = new MediaPlayer();
     }
 
     public void play(String path) throws IOException {
-        if(mMediaPlayer.isPlaying()){
-            mMediaPlayer.stop();
-            mMediaPlayer.release();
-            mMediaPlayer = null;
-            mMediaPlayer = new MediaPlayer();
-        }
+        stop();
+        mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setDataSource(path);
         mMediaPlayer.prepare();
         mMediaPlayer.start();
+    }
+
+
+    public void stop() {
+        if (mMediaPlayer != null) {
+            if(mMediaPlayer.isPlaying())mMediaPlayer.stop();
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+        }
     }
 
 }
