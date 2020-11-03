@@ -1,2 +1,10 @@
 include ':app'
 rootProject.name = "JerryEmail"
+
+setBinding(new Binding([gradle: this]))
+evaluate(new File(
+        settingsDir.parentFile,
+        'Library/jemail_module_flutter/.android/include_flutter.groovy'
+))
+include ':jemail_module_flutter'
+project(':jemail_module_flutter').projectDir = new File('../Library/jemail_module_flutter')

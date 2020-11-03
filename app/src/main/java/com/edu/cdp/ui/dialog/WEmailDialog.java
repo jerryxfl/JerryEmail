@@ -73,6 +73,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class WEmailDialog extends BaseDialog {
@@ -769,17 +770,27 @@ public class WEmailDialog extends BaseDialog {
         dealContentFormat();
     }
 
+    //保存要上传的语音地址,及是否上传成功
+    private Map<String,Boolean> voiceMap = new HashMap<>();
+
     private void dealContentFormat() {
-        boolean saveVoice = false;
         JSONObject json = JSONObject.parseObject(sEmail.getContent());
         for (String key : json.keySet()) {
             if (key.startsWith("voice")) {
-                saveVoice = true;
-                saveVoice(json.getString(key));
+                voiceMap.put(key,false);
             }
         }
-        if(!saveVoice){
-            save();
+        if(voiceMap.isEmpty())save();
+        else{
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                voiceMap.forEach((s, aBoolean) -> {
+                    saveVoice(s);
+                });
+            }else{
+                for (String key : voiceMap.keySet()) {
+                    saveVoice(key);
+                }
+            }
         }
     }
 
@@ -802,6 +813,7 @@ public class WEmailDialog extends BaseDialog {
                     }
                     sEmail.setContent(json.toJSONString());
                     System.out.println("语音上传成功:"+JSONObject.parseObject(sEmail.getContent()).toJSONString());
+                    voiceMap.put(voicePath,true);
                     return true;
                 }
                 return false;
@@ -814,22 +826,24 @@ public class WEmailDialog extends BaseDialog {
 
             @Override
             public void onSuccess() {
-                save();
+                if(!voiceMap.containsValue(false)){
+                    save();
+                }
             }
         }, new UploadRequestBody.JUploadCallback2() {
             @Override
             public void onUploadStart(long max, long progress) {
-
+                System.out.println("上传开始了"+max);
             }
 
             @Override
             public void onUploadUpdate(long max, long progress) {
-
+                System.out.println("上传进度"+progress);
             }
 
             @Override
             public void onUploadComplete(long max, long progress) {
-
+                System.out.println("上传结束");
             }
         });
     }

@@ -32,8 +32,10 @@ import com.edu.cdp.bean.Constants;
 import com.edu.cdp.custom.CircleOnlineAvatar;
 import com.edu.cdp.custom.FurtherAvatar;
 import com.edu.cdp.database.bean.Email;
+import com.edu.cdp.database.bean.Recent;
 import com.edu.cdp.database.dao.EmailDao;
 import com.edu.cdp.databinding.ActivityEmailListBinding;
+import com.edu.cdp.model.manager.ModelManager;
 import com.edu.cdp.net.okhttp.OkHttpUtils;
 import com.edu.cdp.response.User;
 import com.edu.cdp.utils.AndroidUtils;
@@ -156,6 +158,7 @@ public class EmailListActivity extends BaseActivity<ActivityEmailListBinding> {
                         }
                         LinearLayout container = holder.findViewById(R.id.container);
                         container.setOnClickListener(view -> {
+                            ModelManager.getManager().updateRecent(new Recent(email.getId(),email.getTag()));
                             Intent intent = new Intent(EmailListActivity.this,EmailActivity.class);
                             Bundle args = new Bundle();
                             args.putSerializable("email",email);
@@ -259,7 +262,7 @@ public class EmailListActivity extends BaseActivity<ActivityEmailListBinding> {
                     JSONArray data = response.getJSONArray("data");
                     for (int i = 0; i < data.size(); i++) {
                         JSONObject json = data.getJSONObject(i);
-//                        {"senduserid":1,"id":1,"title":"test","content":"testContent","receiveuserid":"3,2"}
+//                      {"senduserid":1,"id":1,"title":"test","content":"testContent","receiveuserid":"3,2"}
                         final Email email = new Email(
                                 json.getInteger("id"),
                                 account.getLocalUser().getId(),

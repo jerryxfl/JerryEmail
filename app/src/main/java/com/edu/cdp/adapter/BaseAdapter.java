@@ -88,7 +88,7 @@ public class BaseAdapter<T> extends RecyclerView.Adapter<BaseViewHolder> {
 
     @Override
     public int getItemCount() {
-        return mData.size();
+        return mData==null?0:mData.size();
     }
 
     @Override

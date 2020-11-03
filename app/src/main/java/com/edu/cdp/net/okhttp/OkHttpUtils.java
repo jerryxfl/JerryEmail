@@ -259,15 +259,16 @@ public class OkHttpUtils {
         File file = new File(fileDir);
         if (!file.exists()) {
             //如果文件不存在，抛出空指针异常
-            throw new NullPointerException("File does not exist");
+            System.out.println("file not exists");
+            return;
         }
 
         //创建okhttplient
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .readTimeout(5 * 1000, TimeUnit.MILLISECONDS)
-                .writeTimeout(5 * 1000, TimeUnit.MILLISECONDS)
-                .connectTimeout(5 * 1000, TimeUnit.MILLISECONDS)
-                .callTimeout(5 * 1000, TimeUnit.MILLISECONDS)
+                .readTimeout(500 * 1000, TimeUnit.MILLISECONDS)
+                .writeTimeout(500 * 1000, TimeUnit.MILLISECONDS)
+                .connectTimeout(500 * 1000, TimeUnit.MILLISECONDS)
+                .callTimeout(500 * 1000, TimeUnit.MILLISECONDS)
                 .build();
 
 //        创建请求体
@@ -329,7 +330,7 @@ public class OkHttpUtils {
                         if (jUploadCallback1.onResponseAsync(JSONObject.parseObject(result))) {
                             new Handler(Looper.getMainLooper()).post(jUploadCallback1::onSuccess);
                         } else {
-                            new Handler(Looper.getMainLooper()).post(() -> jUploadCallback1.onFailure("json解析uowu"));
+                            new Handler(Looper.getMainLooper()).post(() -> jUploadCallback1.onFailure("json解析错误"));
                         }
 
 

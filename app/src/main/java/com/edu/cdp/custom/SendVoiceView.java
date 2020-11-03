@@ -364,7 +364,6 @@ public class SendVoiceView extends View implements View.OnTouchListener {
                 }
                 mMediaRecorder.setOutputFile(filePath);
                 mMediaRecorder.prepare();
-                mMediaRecorder.setOnInfoListener((mr, what, extra) -> System.out.println("录音:"+what+"   extra:"+extra));
                 mMediaRecorder.start();
                 isRecording = true;
             } catch (Exception e) {

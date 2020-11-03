@@ -152,7 +152,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
         if (mFileIsDownload) return;
         if (url == null || url.equals("") || !url.startsWith("http")) return;
         String saveDir = getContext().getFilesDir().toString() + File.separator + "voice" + File.separator;
-        System.out.println("下载文件夹：" + saveDir);
         if (mDownloadStatus == 1)
             OkHttpUtils.DOWNLOAD(url, saveDir, null, new OkHttpUtils.JDownloadCallback() {
                 @Override
@@ -180,7 +179,6 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
                         }
                     });
                     valueAnimator.start();
-
                 }
 
                 @Override

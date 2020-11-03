@@ -16,8 +16,11 @@ public interface EmailDao {
     @Query("SELECT * FROM  Email")
     List<Email> getAllEmail();
 
-    @Query("SELECT * FROM Email WHERE id = :id")
-    Email loadEmailById(int id);
+    @Query("SELECT * FROM Email WHERE id = :id and tag = :tag")
+    Email loadEmailById(int id,int tag);
+
+    @Query("SELECT * FROM Email WHERE gid = :gid")
+    Email loadEmailByGID(int gid);
 
     @Query("SELECT * FROM Email WHERE tag = 1 and userid = :userid")
     List<Email> loadAllInbox(int userid);

@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,11 +36,12 @@ import com.edu.cdp.base.BaseActivity;
 import com.edu.cdp.bean.Account;
 import com.edu.cdp.bean.Constants;
 import com.edu.cdp.bean.Contact;
-import com.edu.cdp.bean.Email;
 import com.edu.cdp.custom.AvatarView;
 import com.edu.cdp.custom.CircleOnlineAvatar;
 import com.edu.cdp.custom.FurtherAvatar;
+import com.edu.cdp.database.bean.Email;
 import com.edu.cdp.database.bean.LocalUser;
+import com.edu.cdp.database.bean.Recent;
 import com.edu.cdp.database.dao.EmailDao;
 import com.edu.cdp.database.dao.UserDao;
 import com.edu.cdp.databinding.ActivityHomeBinding;
@@ -64,12 +67,18 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import io.flutter.embedding.android.FlutterActivity;
+import io.flutter.embedding.android.FlutterActivityLaunchConfigs;
+import io.flutter.plugin.common.BinaryMessenger;
+import io.flutter.plugin.common.EventChannel;
 
 public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
     private UserDao userDao;
@@ -126,7 +135,7 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
 
         binding.menu.setOnLongClickListener(v -> {
             EmailPopMenu wEmailPopMenu = new EmailPopMenu(HomeActivity.this);
-            wEmailPopMenu.showPopUpWindow(binding.menu,-10,10);
+            wEmailPopMenu.showPopUpWindow(binding.menu, -10, 10);
             return true;
         });
     }
@@ -182,7 +191,7 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                             contactName.setText(contact.getLocalUser().getNickname());
                             avatarView.setOnClickListener(v -> {
                                 //发送邮件
-                                WEmailDialog wEmailDialog = new WEmailDialog(HomeActivity.this,ModelManager.getManager().getMainAccountModel().getUser().getValue());
+                                WEmailDialog wEmailDialog = new WEmailDialog(HomeActivity.this, ModelManager.getManager().getMainAccountModel().getUser().getValue());
                                 wEmailDialog.showDialog();
                                 wEmailDialog.addReceivers(contact);
 
@@ -236,65 +245,100 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(RecyclerView.VERTICAL);
         binding.recentRecyclerview.setLayoutManager(layoutManager);
-        JAdapter<com.edu.cdp.bean.Email> emailAdapter = new JAdapter<>(this,
-                binding.recentRecyclerview, new int[]{R.layout.mail_layout}, new JAdapter.DataListener<Email>() {
+        JAdapter<com.edu.cdp.database.bean.Email> emailAdapter = new JAdapter<>(this,
+                binding.recentRecyclerview, new int[]{R.layout.single_mail_layout, R.layout.mail_layout}, new JAdapter.DataListener<com.edu.cdp.database.bean.Email>() {
             @SuppressLint("SetTextI18n")
             @Override
-            public void initItem(BaseViewHolder holder, int position, List<Email> data) {
-                Email email = data.get(position);
-                CircleOnlineAvatar circleOnlineAvatar = holder.findViewById(R.id.avatar);
-                FurtherAvatar furtherAvatar = holder.findViewById(R.id.FurtherAvatar);
-                TextView title = holder.findViewById(R.id.title);
-                TextView content = holder.findViewById(R.id.content);
-                TextView time = holder.findViewById(R.id.time);
-                TextView msgNumber = holder.findViewById(R.id.msg_num);
+            public void initItem(BaseViewHolder holder, int position, List<com.edu.cdp.database.bean.Email> data) {
+                com.edu.cdp.database.bean.Email email = data.get(position);
+                if (email.getTag() == 4) {
+                    //群邮件
+                    final CircleOnlineAvatar circleOnlineAvatar = holder.findViewById(R.id.avatar);
+                    final FurtherAvatar furtherAvatar = holder.findViewById(R.id.FurtherAvatar);
+                    TextView title = holder.findViewById(R.id.title);
+                    TextView content = holder.findViewById(R.id.content);
+                    TextView time = holder.findViewById(R.id.time);
+                    TextView msgNumber = holder.findViewById(R.id.msg_num);
 
-                circleOnlineAvatar.setBitmap(email.getAvatar());
-                title.setText(email.getTitle());
-                content.setText(email.getContent());
-                time.setText(CalculateTimeDifference(email.getTime().getTime() + ""));
-                furtherAvatar.setBitmap(email.getOthersAvatar());
-                msgNumber.setText(email.getMsgNumber() + "");
+                    circleOnlineAvatar.setShowOnlineState(false);
+//{\"avatar\":\"http://192.168.42.246:8080/JerryEmail/resources/1.jpg\",\"id\":1,\"nickname\":\"System\",\"password\":\"26521\",\"username\":\"1072059168@guilang.com\"}
+                    List<User> users = GsonUtil.jsonToList(email.getReceiveuserinfo(), User.class);
 
-                furtherAvatar.setOnAvatarClickListener(new FurtherAvatar.AvatarListener() {
-                    @Override
-                    public void AvatarOnclick(int position) {
-                        Toast.makeText(HomeActivity.this, position + "", Toast.LENGTH_SHORT).show();
+                    for (User user :users) {
+                        Glide.with(HomeActivity.this)
+                                .load(user.getAvatar())
+                                .into(new SimpleTarget<Drawable>() {
+                                    @Override
+                                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                        furtherAvatar.setDrawable(resource);
+                                    }
+                                });
                     }
 
-                    @Override
-                    public void MoreOnclick() {
-                        Toast.makeText(HomeActivity.this, "more", Toast.LENGTH_SHORT).show();
-                    }
+                    User user = GsonUtil.parserJsonToArrayBean(email.getSenduserinfo(), User.class);
+                    Glide.with(HomeActivity.this)
+                            .load(user.getAvatar())
+                            .into(new SimpleTarget<Drawable>() {
+                                @Override
+                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                    circleOnlineAvatar.setDrawable(resource);
+                                }
+                            });
+
+                    title.setText(email.getTitle());
+                    time.setText(CalculateTimeDifference(email.getTime()+""));
+                    msgNumber.setText("1");
+
+                    JSONObject json = JSONObject.parseObject(email.getContent());
+                    String text = !json.containsKey("text")||json.getString("text").equals("")?"进入查看":json.getString("text");
+                    content.setText(text);
+                } else {
+                    User user = GsonUtil.parserJsonToArrayBean(email.getSenduserinfo(), User.class);
+
+                    final CircleOnlineAvatar avatar = holder.findViewById(R.id.avatar);
+                    TextView title = holder.findViewById(R.id.title);
+                    TextView time = holder.findViewById(R.id.time);
+                    TextView content = holder.findViewById(R.id.content);
+
+                    Glide.with(HomeActivity.this)
+                            .load(user.getAvatar())
+                            .into(new SimpleTarget<Drawable>() {
+                                @Override
+                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                    avatar.setDrawable(resource);
+                                }
+                            });
+                    title.setText(email.getTitle());
+                    time.setText(CalculateTimeDifference(email.getTime()+""));
+                    JSONObject json = JSONObject.parseObject(email.getContent());
+                    String text = !json.containsKey("text")||json.getString("text").equals("")?"进入查看":json.getString("text");
+                    content.setText(text);
+                }
+                LinearLayout container = holder.findViewById(R.id.container);
+                container.setOnClickListener(view -> {
+                    Intent intent = new Intent(HomeActivity.this,EmailActivity.class);
+                    Bundle args = new Bundle();
+                    args.putSerializable("email",email);
+                    intent.putExtras(args);
+                    startActivity(intent);
                 });
-            }
-
-            @Override
-            public void updateItem(BaseViewHolder holder, int position, List<Email> data, String tag) {
 
             }
 
             @Override
-            public int getItemViewType(int position, List<Email> data) {
-                return 0;
+            public void updateItem(BaseViewHolder holder, int position, List<com.edu.cdp.database.bean.Email> data, String tag) {
+
+            }
+
+            @Override
+            public int getItemViewType(int position, List<com.edu.cdp.database.bean.Email> data) {
+                if (data.get(position).getTag() == 4) return 1;
+                else return 0;
             }
         });
-
-        List<Email> emailList = new ArrayList<Email>();
-        final int[] avatars = new int[]{R.drawable.one, R.drawable.two};
-        List<Integer> list = new ArrayList<Integer>();
-        for (int i = 0; i < avatars.length; i++) {
-            list.add(avatars[i]);
-        }
-        for (int i = 0; i < 2; i++) {
-            emailList.add(new Email(avatars[i], "Darlence Robertson" + i, "How are you doing?", new Date(), list, 5));
-        }
-
-        ModelManager.getManager().getEmailModel().getEmails().setValue(emailList);
-        ModelManager.getManager().getEmailModel().getEmails().observe(this, emails -> {
-
+        ModelManager.getManager().getRecentModel().getRecent().observe(this, emails -> {
+            emailAdapter.adapter.setData(ModelManager.getManager().getRecentModel().getRecent().getValue());
         });
-        emailAdapter.adapter.setData(ModelManager.getManager().getEmailModel().getEmails().getValue());
     }
 
     //我的收件箱
@@ -332,11 +376,15 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
                                 mailNum.setTextColor(Color.WHITE);
                                 mailNum.setText("请重新登录");
                                 container.setOnClickListener(view -> {
-                                    Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
-                                    Bundle bundle = new Bundle();
-                                    bundle.putSerializable("login", account.getLocalUser());
-                                    intent.putExtras(bundle);
-                                    startActivity(intent);
+//                                    Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+//                                    Bundle bundle = new Bundle();
+//                                    bundle.putSerializable("login", account.getLocalUser());
+//                                    intent.putExtras(bundle);
+//                                    startActivity(intent);
+
+                                    startActivity(FlutterActivity.withCachedEngine("JENGINE")
+                                            .backgroundMode(FlutterActivityLaunchConfigs.BackgroundMode.transparent)
+                                            .build(HomeActivity.this));
                                 });
                             } else {
                                 //账号登陆状态
@@ -384,7 +432,6 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
             accountJAdapter.adapter.setData(accounts);
         });
     }
-
 
 
     private String CalculateTimeDifference(String timeStr) {
