@@ -46,6 +46,7 @@ import com.edu.cdp.database.dao.EmailDao;
 import com.edu.cdp.database.dao.UserDao;
 import com.edu.cdp.databinding.ActivityHomeBinding;
 import com.edu.cdp.eventbus.event.LoginEvent;
+import com.edu.cdp.flutter.channel.FlutterEventChannel;
 import com.edu.cdp.model.manager.ModelManager;
 import com.edu.cdp.net.okhttp.OkHttpUtils;
 import com.edu.cdp.net.websocket.CommandType;
@@ -77,6 +78,7 @@ import java.util.Objects;
 
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.android.FlutterActivityLaunchConfigs;
+import io.flutter.embedding.engine.FlutterEngineCache;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
 
@@ -381,10 +383,21 @@ public class HomeActivity extends BaseActivity<ActivityHomeBinding> {
 //                                    bundle.putSerializable("login", account.getLocalUser());
 //                                    intent.putExtras(bundle);
 //                                    startActivity(intent);
+//
+//                                    startActivity(FlutterActivity.withCachedEngine("JENGINE")
+//                                            .backgroundMode(FlutterActivityLaunchConfigs.BackgroundMode.transparent)
+//                                            .build(HomeActivity.this));
+////
+//
+//                                    FlutterEventChannel flutterEventChannel =
+//                                            new FlutterEventChannel(FlutterEngineCache.getInstance().get("JENGINE").getDartExecutor().getBinaryMessenger(), "CHANGE_ROUTE");
+//                                    flutterEventChannel.sendEvent("logout");
 
-                                    startActivity(FlutterActivity.withCachedEngine("JENGINE")
-                                            .backgroundMode(FlutterActivityLaunchConfigs.BackgroundMode.transparent)
-                                            .build(HomeActivity.this));
+                                    Intent intent = new Intent(HomeActivity.this,SingleLoginActivity.class);
+                                    Bundle bundle = new Bundle();
+                                    bundle.putSerializable("LOGIN", account.getLocalUser());
+                                    intent.putExtras(bundle);
+                                    startActivity(intent);
                                 });
                             } else {
                                 //账号登陆状态

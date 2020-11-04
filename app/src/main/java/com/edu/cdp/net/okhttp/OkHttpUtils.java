@@ -260,6 +260,7 @@ public class OkHttpUtils {
         if (!file.exists()) {
             //如果文件不存在，抛出空指针异常
             System.out.println("file not exists");
+            if (jUploadCallback2 != null) jUploadCallback1.onFailure("file not exists");
             return;
         }
 

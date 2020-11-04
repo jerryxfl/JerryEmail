@@ -23,13 +23,13 @@
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup"
         tools:targetApi="n">
+        <activity android:name=".ui.activity.SingleLoginActivity"></activity>
         <activity
             android:name="io.flutter.embedding.android.FlutterActivity"
-            android:theme="@style/LunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
+            android:theme="@style/LunchTheme"
             android:windowSoftInputMode="adjustResize" />
-
         <activity android:name=".ui.activity.UInfoActivity" />
         <activity android:name=".ui.activity.GeneralSettingsActivity" />
         <activity android:name=".ui.activity.EmailActivity" />

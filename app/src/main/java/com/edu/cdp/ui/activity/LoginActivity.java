@@ -38,7 +38,6 @@ import java.util.List;
 public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
     private LoadingDialog loadingDialog;
     private UserDao userDao;
-    private LocalUser login;
     private ValueAnimator valueAnimator;
 
     @Override
@@ -55,23 +54,6 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
     protected void initViews(final ActivityLoginBinding binding) {
         loadingDialog = new LoadingDialog(this);
         userDao = JApplication.getInstance().getDb().userDao();
-        Intent intent = getIntent();
-
-        login = (LocalUser) intent.getSerializableExtra("login");
-        if(login!=null){
-
-
-            binding.email.setText(login.getUsername());
-            binding.password.setText(login.getPassword());
-            new Handler(Looper.getMainLooper()).post(() -> Glide.with(LoginActivity.this)
-                    .load(login.getAvatar())
-                    .into(new SimpleTarget<Drawable>() {
-                        @Override
-                        public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                            binding.avatar.setDrawable(resource);
-                        }
-                    }));
-        }
     }
 
     @Override
@@ -144,7 +126,7 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
         }
 
         final List<LocalUser> allLocalUser = userDao.getAllUser();
-        if(login==null)for (LocalUser u : allLocalUser) {
+        for (LocalUser u : allLocalUser) {
             if(u.getUsername().equals(email)){
                 loadingDialog.dismissDialog();
                 binding.email.setError("该账号已经登录");
@@ -173,30 +155,24 @@ public class LoginActivity extends BaseActivity<ActivityLoginBinding> {
                 if(code == 400){
                     String data = response.getString("data");
                     JSONObject json  = JSONObject.parseObject(data);
-                    if(login == null){
-                        final LocalUser localUser = new LocalUser(
-                                json.getInteger("id"),
-                                json.getString("username"),
-                                json.getString("password"),
-                                json.getString("nickname"),
-                                json.getString("avatar"),
-                                json.getString("uuid"),
-                                allLocalUser.isEmpty()
-                        );
-                        userDao.insertOneUser(localUser);
-                        new Handler(Looper.getMainLooper()).post(() -> Glide.with(LoginActivity.this)
-                                .load(localUser.getAvatar())
-                                .into(new SimpleTarget<Drawable>() {
-                                    @Override
-                                    public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                        binding.avatar.setDrawable(resource);
-                                    }
-                                }));
-                    }else{
-                        login.setUUID(json.getString("uuid"));
-                        userDao.updateUsers(login);
-                    }
-
+                    final LocalUser localUser = new LocalUser(
+                            json.getInteger("id"),
+                            json.getString("username"),
+                            json.getString("password"),
+                            json.getString("nickname"),
+                            json.getString("avatar"),
+                            json.getString("uuid"),
+                            allLocalUser.isEmpty()
+                    );
+                    userDao.insertOneUser(localUser);
+                    new Handler(Looper.getMainLooper()).post(() -> Glide.with(LoginActivity.this)
+                            .load(localUser.getAvatar())
+                            .into(new SimpleTarget<Drawable>() {
+                                @Override
+                                public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
+                                    binding.avatar.setDrawable(resource);
+                                }
+                            }));
                     return true;
                 }else{
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
