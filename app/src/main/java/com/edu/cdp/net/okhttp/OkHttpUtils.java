@@ -263,7 +263,6 @@ public class OkHttpUtils {
             if (jUploadCallback2 != null) jUploadCallback1.onFailure("file not exists");
             return;
         }
-
         //创建okhttplient
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
                 .readTimeout(500 * 1000, TimeUnit.MILLISECONDS)

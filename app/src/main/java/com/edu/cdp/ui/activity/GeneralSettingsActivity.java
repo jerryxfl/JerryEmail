@@ -70,7 +70,9 @@ public class GeneralSettingsActivity extends BaseActivity<ActivityGeneralSetting
                         }
 
                         RelativeLayout container = holder.findViewById(R.id.container);
-                        container.setOnClickListener(v -> setting2.getClickListener().onCLick());
+                        container.setOnClickListener(v -> {
+                            if(setting2.getClickListener()!=null)setting2.getClickListener().onCLick();
+                        });
 
                     }
 

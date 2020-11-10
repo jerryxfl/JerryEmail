@@ -610,7 +610,7 @@ public class WEmailDialog extends BaseDialog {
 
     /**
      * 滑动到指定view
-     *
+     * 滑动到指定view
      * @param position
      */
     private void scrollToView(int position) {
@@ -777,7 +777,7 @@ public class WEmailDialog extends BaseDialog {
         JSONObject json = JSONObject.parseObject(sEmail.getContent());
         for (String key : json.keySet()) {
             if (key.startsWith("voice")) {
-                voiceMap.put(key,false);
+                voiceMap.put(json.getString(key),false);
             }
         }
         if(voiceMap.isEmpty())save();
@@ -884,3 +884,4 @@ public class WEmailDialog extends BaseDialog {
         void InitEvent(View view);
     }
 }
+

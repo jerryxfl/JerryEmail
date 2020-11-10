@@ -151,6 +151,7 @@ public class VoiceView<T extends Context & LifecycleOwner> extends View implemen
     private void downloadFile(String url) {
         if (mFileIsDownload) return;
         if (url == null || url.equals("") || !url.startsWith("http")) return;
+        System.out.println("downloadUrl:"+url);
         String saveDir = getContext().getFilesDir().toString() + File.separator + "voice" + File.separator;
         if (mDownloadStatus == 1)
             OkHttpUtils.DOWNLOAD(url, saveDir, null, new OkHttpUtils.JDownloadCallback() {
